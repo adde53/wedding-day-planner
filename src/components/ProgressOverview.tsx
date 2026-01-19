@@ -31,7 +31,7 @@ export function ProgressOverview({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
         {/* Countdown */}
         <div className="text-center lg:text-left">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-light mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage-light mb-4">
             <Heart className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-primary">Nedräkning</span>
           </div>

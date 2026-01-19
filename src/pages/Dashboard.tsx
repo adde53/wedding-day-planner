@@ -1,0 +1,222 @@
+import { useState, useMemo, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { ProgressOverview } from "@/components/ProgressOverview";
+import { WeddingChecklist } from "@/components/WeddingChecklist";
+import { BudgetTracker } from "@/components/BudgetTracker";
+import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+export default function Dashboard() {
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [completedTasks, setCompletedTasks] = useState(0);
+  const totalTasks = 16;
+
+  // Set wedding date to 8 months from now for demo
+  const weddingDate = useMemo(() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() + 8);
+    return date;
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Laddar...</div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  return (
+    <div className="min-h-screen bg-subtle">
+      <DashboardHeader activeTab={activeTab} onTabChange={setActiveTab} />
+
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <AnimatePresence mode="wait">
+          {activeTab === "overview" && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {/* Welcome Section */}
+              <section className="bg-card rounded-2xl p-8 shadow-sm border border-border">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="w-5 h-5 text-gold" />
+                      <span className="text-sm font-medium text-gold">
+                        Välkommen tillbaka
+                      </span>
+                    </div>
+                    <h1 className="font-serif text-3xl font-medium text-foreground mb-2">
+                      Ert bröllop närmar sig
+                    </h1>
+                    <p className="text-muted-foreground">
+                      Fortsätt planera och håll koll på alla detaljer.
+                    </p>
+                  </div>
+                  <button className="p-2 rounded-lg hover:bg-muted transition-colors">
+                    <Settings className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                </div>
+              </section>
+
+              {/* Progress Overview */}
+              <ProgressOverview
+                weddingDate={weddingDate}
+                completedTasks={completedTasks}
+                totalTasks={totalTasks}
+              />
+
+              {/* Quick Actions */}
+              <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  onClick={() => setActiveTab("checklist")}
+                  className="bg-card rounded-2xl p-6 shadow-sm border border-border hover:shadow-md transition-all text-left group"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-sage-light flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                    <CheckSquare className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-serif text-xl font-medium text-foreground mb-2">
+                    Checklista
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    {totalTasks - completedTasks} uppgifter kvar
+                  </p>
+                </motion.button>
+
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  onClick={() => setActiveTab("budget")}
+                  className="bg-card rounded-2xl p-6 shadow-sm border border-border hover:shadow-md transition-all text-left group"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-gold-light flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                    <Wallet className="w-6 h-6 text-accent" />
+                  </div>
+                  <h3 className="font-serif text-xl font-medium text-foreground mb-2">
+                    Budget
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Hantera era utgifter
+                  </p>
+                </motion.button>
+
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-card rounded-2xl p-6 shadow-sm border border-border hover:shadow-md transition-all text-left group"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-taupe-light flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                    <Calendar className="w-6 h-6 text-taupe" />
+                  </div>
+                  <h3 className="font-serif text-xl font-medium text-foreground mb-2">
+                    Tidslinje
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Se alla deadlines
+                  </p>
+                </motion.button>
+              </section>
+
+              {/* Info Card */}
+              <motion.section
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="bg-card rounded-2xl p-8 shadow-sm border border-border text-center"
+              >
+                <Heart className="w-10 h-10 text-primary mx-auto mb-4" />
+                <h2 className="font-serif text-2xl font-medium text-foreground mb-3">
+                  Ert bröllop, er stil
+                </h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  Varje bröllop är unikt. Använd våra verktyg för att planera
+                  precis det bröllop ni drömmer om.
+                </p>
+              </motion.section>
+            </motion.div>
+          )}
+
+          {activeTab === "checklist" && (
+            <motion.div
+              key="checklist"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-8">
+                <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
+                  Bröllopschecklista
+                </h2>
+                <p className="text-muted-foreground">
+                  Klicka på uppgifter för att markera dem som klara
+                </p>
+              </div>
+              <WeddingChecklist onProgressChange={setCompletedTasks} />
+            </motion.div>
+          )}
+
+          {activeTab === "budget" && (
+            <motion.div
+              key="budget"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-8">
+                <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
+                  Budgetplanerare
+                </h2>
+                <p className="text-muted-foreground">
+                  Klicka på belopp för att uppdatera verkliga kostnader
+                </p>
+              </div>
+              <BudgetTracker />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border mt-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Heart className="w-5 h-5 text-primary" />
+              <span className="font-serif text-lg font-medium text-foreground">
+                Wedding Planner Pro
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Med kärlek, för er stora dag ❤️
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

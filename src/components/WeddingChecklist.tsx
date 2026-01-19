@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Circle, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -64,7 +64,11 @@ const initialChecklist: ChecklistCategory[] = [
   },
 ];
 
-export function WeddingChecklist() {
+interface WeddingChecklistProps {
+  onProgressChange?: (completed: number) => void;
+}
+
+export function WeddingChecklist({ onProgressChange }: WeddingChecklistProps) {
   const [checklist, setChecklist] = useState<ChecklistCategory[]>(initialChecklist);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(["12-months"]);
 
@@ -96,6 +100,15 @@ export function WeddingChecklist() {
     return (completed / category.items.length) * 100;
   };
 
+  // Calculate total completed and notify parent
+  useEffect(() => {
+    const totalCompleted = checklist.reduce(
+      (sum, category) => sum + category.items.filter((item) => item.completed).length,
+      0
+    );
+    onProgressChange?.(totalCompleted);
+  }, [checklist, onProgressChange]);
+
   return (
     <div className="space-y-4">
       {checklist.map((category, categoryIndex) => {
@@ -115,7 +128,7 @@ export function WeddingChecklist() {
               className="w-full p-5 flex items-center justify-between hover:bg-muted/50 transition-colors"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-rose-light flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-sage-light flex items-center justify-center">
                   <Calendar className="w-5 h-5 text-primary" />
                 </div>
                 <div className="text-left">

@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
-import { Heart, Menu, X } from "lucide-react";
+import { Heart, Menu, X, LogOut, Shield } from "lucide-react";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface HeaderProps {
+interface DashboardHeaderProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
@@ -14,8 +16,15 @@ const tabs = [
   { id: "budget", label: "Budget" },
 ];
 
-export function Header({ activeTab, onTabChange }: HeaderProps) {
+export function DashboardHeader({ activeTab, onTabChange }: DashboardHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { signOut, isAdmin } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -27,15 +36,17 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-3"
           >
-            <div className="w-10 h-10 rounded-full bg-rose-gradient flex items-center justify-center shadow-soft">
-              <Heart className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="font-serif text-xl font-semibold text-foreground">
-                Wedding Planner
-              </h1>
-              <p className="text-xs text-muted-foreground -mt-0.5">Pro</p>
-            </div>
+            <Link to="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-sage-gradient flex items-center justify-center shadow-sm">
+                <Heart className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="font-serif text-xl font-medium text-foreground">
+                  Wedding Planner
+                </h1>
+                <p className="text-xs text-muted-foreground -mt-0.5">Pro</p>
+              </div>
+            </Link>
           </motion.div>
 
           {/* Desktop Navigation */}
@@ -47,7 +58,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-all",
                   activeTab === tab.id
-                    ? "bg-primary text-primary-foreground shadow-soft"
+                    ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
@@ -55,6 +66,24 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
               </button>
             ))}
           </nav>
+
+          {/* Actions */}
+          <div className="hidden md:flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <Shield className="w-5 h-5" />
+              </Link>
+            )}
+            <button
+              onClick={handleSignOut}
+              className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
 
           {/* Mobile Menu Button */}
           <button
@@ -94,6 +123,23 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
                   {tab.label}
                 </button>
               ))}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted text-left flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin
+                </Link>
+              )}
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted text-left flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logga ut
+              </button>
             </div>
           </motion.nav>
         )}
