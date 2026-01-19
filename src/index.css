@@ -2,127 +2,135 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
-/* Wedding Planner Pro - Romantic Elegant Design System */
+/* Wedding Planner Pro - Refined Elegant Design System */
 
 @layer base {
   :root {
-    /* Romantic blush palette */
-    --background: 30 30% 98%;
-    --foreground: 20 15% 20%;
+    /* Clean, sophisticated neutral palette */
+    --background: 40 20% 98%;
+    --foreground: 220 20% 15%;
 
-    --card: 30 25% 99%;
-    --card-foreground: 20 15% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 15%;
 
-    --popover: 30 25% 99%;
-    --popover-foreground: 20 15% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 15%;
 
-    /* Soft rose/blush primary */
-    --primary: 350 60% 65%;
+    /* Sophisticated olive/sage primary */
+    --primary: 150 25% 35%;
     --primary-foreground: 0 0% 100%;
 
-    /* Sage green secondary */
-    --secondary: 140 25% 75%;
-    --secondary-foreground: 140 30% 25%;
+    /* Warm taupe secondary */
+    --secondary: 30 15% 90%;
+    --secondary-foreground: 220 20% 20%;
 
     /* Warm muted tones */
-    --muted: 30 20% 94%;
-    --muted-foreground: 20 10% 45%;
+    --muted: 40 15% 94%;
+    --muted-foreground: 220 10% 45%;
 
-    /* Gold accent */
-    --accent: 38 70% 55%;
+    /* Warm gold accent */
+    --accent: 38 60% 50%;
     --accent-foreground: 38 80% 15%;
 
-    --destructive: 0 70% 55%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 20% 88%;
-    --input: 30 20% 88%;
-    --ring: 350 60% 65%;
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 150 25% 35%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Custom wedding tokens */
-    --rose: 350 60% 65%;
-    --rose-light: 350 50% 92%;
-    --sage: 140 25% 75%;
-    --sage-dark: 140 30% 35%;
-    --gold: 38 70% 55%;
-    --gold-light: 38 60% 85%;
-    --champagne: 40 40% 95%;
-    --blush: 10 50% 95%;
+    --sage: 150 25% 35%;
+    --sage-light: 150 20% 92%;
+    --sage-muted: 150 15% 75%;
+    --taupe: 30 15% 70%;
+    --taupe-light: 30 12% 92%;
+    --gold: 38 60% 50%;
+    --gold-light: 38 40% 88%;
+    --cream: 40 30% 96%;
+    --charcoal: 220 20% 20%;
+    --warm-gray: 30 8% 60%;
 
     /* Gradients */
-    --gradient-romantic: linear-gradient(135deg, hsl(350 50% 92%) 0%, hsl(40 40% 95%) 50%, hsl(140 20% 92%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(38 70% 55%) 0%, hsl(45 80% 70%) 100%);
-    --gradient-rose: linear-gradient(135deg, hsl(350 60% 65%) 0%, hsl(340 50% 75%) 100%);
+    --gradient-subtle: linear-gradient(135deg, hsl(40 20% 98%) 0%, hsl(150 15% 96%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(38 60% 50%) 0%, hsl(45 70% 60%) 100%);
+    --gradient-sage: linear-gradient(135deg, hsl(150 25% 35%) 0%, hsl(160 20% 45%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 20% 98%) 100%);
 
     /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(20 15% 20% / 0.08);
-    --shadow-card: 0 8px 30px -8px hsl(20 15% 20% / 0.1);
-    --shadow-elevated: 0 20px 50px -15px hsl(20 15% 20% / 0.15);
+    --shadow-xs: 0 1px 2px 0 hsl(220 20% 15% / 0.03);
+    --shadow-sm: 0 1px 3px 0 hsl(220 20% 15% / 0.04), 0 1px 2px -1px hsl(220 20% 15% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(220 20% 15% / 0.05), 0 2px 4px -2px hsl(220 20% 15% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(220 20% 15% / 0.06), 0 4px 6px -4px hsl(220 20% 15% / 0.06);
+    --shadow-xl: 0 20px 25px -5px hsl(220 20% 15% / 0.08), 0 8px 10px -6px hsl(220 20% 15% / 0.08);
 
-    --sidebar-background: 30 30% 98%;
-    --sidebar-foreground: 20 15% 20%;
-    --sidebar-primary: 350 60% 65%;
+    --sidebar-background: 40 20% 98%;
+    --sidebar-foreground: 220 20% 15%;
+    --sidebar-primary: 150 25% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 140 25% 75%;
-    --sidebar-accent-foreground: 140 30% 25%;
-    --sidebar-border: 30 20% 88%;
-    --sidebar-ring: 350 60% 65%;
+    --sidebar-accent: 30 15% 90%;
+    --sidebar-accent-foreground: 220 20% 20%;
+    --sidebar-border: 40 15% 88%;
+    --sidebar-ring: 150 25% 35%;
   }
 
   .dark {
-    --background: 20 15% 10%;
-    --foreground: 30 20% 95%;
+    --background: 220 20% 8%;
+    --foreground: 40 15% 95%;
 
-    --card: 20 15% 12%;
-    --card-foreground: 30 20% 95%;
+    --card: 220 18% 12%;
+    --card-foreground: 40 15% 95%;
 
-    --popover: 20 15% 12%;
-    --popover-foreground: 30 20% 95%;
+    --popover: 220 18% 12%;
+    --popover-foreground: 40 15% 95%;
 
-    --primary: 350 55% 70%;
-    --primary-foreground: 20 15% 10%;
+    --primary: 150 30% 50%;
+    --primary-foreground: 220 20% 8%;
 
-    --secondary: 140 20% 30%;
-    --secondary-foreground: 140 20% 90%;
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 40 15% 90%;
 
-    --muted: 20 15% 18%;
-    --muted-foreground: 30 15% 60%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 40 10% 55%;
 
-    --accent: 38 60% 50%;
-    --accent-foreground: 38 80% 95%;
+    --accent: 38 50% 45%;
+    --accent-foreground: 38 60% 95%;
 
     --destructive: 0 60% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 20 15% 20%;
-    --input: 20 15% 20%;
-    --ring: 350 55% 70%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 150 30% 50%;
 
-    --rose: 350 55% 70%;
-    --rose-light: 350 40% 20%;
-    --sage: 140 20% 40%;
-    --sage-dark: 140 25% 70%;
-    --gold: 38 60% 50%;
-    --gold-light: 38 50% 25%;
-    --champagne: 40 20% 15%;
-    --blush: 10 30% 15%;
+    --sage: 150 30% 50%;
+    --sage-light: 150 20% 18%;
+    --sage-muted: 150 15% 35%;
+    --taupe: 30 10% 40%;
+    --taupe-light: 30 8% 18%;
+    --gold: 38 50% 45%;
+    --gold-light: 38 30% 20%;
+    --cream: 220 15% 12%;
+    --charcoal: 40 15% 90%;
+    --warm-gray: 30 5% 50%;
 
-    --gradient-romantic: linear-gradient(135deg, hsl(350 40% 15%) 0%, hsl(40 20% 12%) 50%, hsl(140 15% 15%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(38 60% 50%) 0%, hsl(45 70% 60%) 100%);
-    --gradient-rose: linear-gradient(135deg, hsl(350 55% 70%) 0%, hsl(340 45% 60%) 100%);
+    --gradient-subtle: linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 18% 12%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(38 50% 45%) 0%, hsl(45 60% 55%) 100%);
+    --gradient-sage: linear-gradient(135deg, hsl(150 30% 50%) 0%, hsl(160 25% 55%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(220 18% 12%) 0%, hsl(220 20% 10%) 100%);
 
-    --sidebar-background: 20 15% 10%;
-    --sidebar-foreground: 30 20% 95%;
-    --sidebar-primary: 350 55% 70%;
-    --sidebar-primary-foreground: 20 15% 10%;
-    --sidebar-accent: 140 20% 30%;
-    --sidebar-accent-foreground: 140 20% 90%;
-    --sidebar-border: 20 15% 20%;
-    --sidebar-ring: 350 55% 70%;
+    --sidebar-background: 220 20% 8%;
+    --sidebar-foreground: 40 15% 95%;
+    --sidebar-primary: 150 30% 50%;
+    --sidebar-primary-foreground: 220 20% 8%;
+    --sidebar-accent: 220 15% 18%;
+    --sidebar-accent-foreground: 40 15% 90%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 150 30% 50%;
   }
 }
 
@@ -133,49 +141,56 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'DM Serif Display', Georgia, serif;
   }
 }
 
 @layer utilities {
   .font-serif {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'DM Serif Display', Georgia, serif;
   }
 
   .font-sans {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
   }
 
-  .bg-romantic {
-    background: var(--gradient-romantic);
+  .bg-subtle {
+    background: var(--gradient-subtle);
   }
 
   .bg-gold-gradient {
     background: var(--gradient-gold);
   }
 
-  .bg-rose-gradient {
-    background: var(--gradient-rose);
+  .bg-sage-gradient {
+    background: var(--gradient-sage);
   }
 
-  .shadow-soft {
-    box-shadow: var(--shadow-soft);
+  .bg-card-gradient {
+    background: var(--gradient-card);
   }
 
-  .shadow-card {
-    box-shadow: var(--shadow-card);
+  .shadow-xs {
+    box-shadow: var(--shadow-xs);
   }
 
   .shadow-elevated {
-    box-shadow: var(--shadow-elevated);
+    box-shadow: var(--shadow-xl);
   }
 
   .text-gradient-gold {
     background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-sage {
+    background: var(--gradient-sage);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
