@@ -12,7 +12,7 @@ import { GuestList } from "@/components/GuestList";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { DrinkCalculator } from "@/components/DrinkCalculator";
 import { FoodCalculator } from "@/components/FoodCalculator";
-import { TablePlanner } from "@/components/TablePlanner";
+import { VisualTablePlanner } from "@/components/VisualTablePlanner";
 import { PremiumGate } from "@/components/PremiumGate";
 import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2, Crown } from "lucide-react";
 
@@ -272,7 +272,7 @@ export default function Dashboard() {
                   Skapa bord och placera era gäster
                 </p>
               </div>
-              <TablePlanner confirmedGuests={guestStats.confirmed} />
+              <VisualTablePlanner confirmedGuests={guestStats.confirmed} />
             </motion.div>
           )}
 
