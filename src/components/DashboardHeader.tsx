@@ -18,6 +18,7 @@ const tabs = [
   { id: "tables", label: "Bord", premium: true },
   { id: "checklist", label: "Checklista", premium: false },
   { id: "budget", label: "Budget", premium: false },
+  { id: "timeline", label: "Tidslinje", premium: false },
   { id: "food", label: "Mat", premium: true },
   { id: "drinks", label: "Drycker", premium: true },
   { id: "settings", label: "Inställningar", premium: false },
