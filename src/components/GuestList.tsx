@@ -76,11 +76,16 @@ export function GuestList({ onGuestStatsChange }: GuestListProps) {
   }, [user]);
 
   useEffect(() => {
-    const confirmed = guests.filter(g => g.rsvp_status === "confirmed").length;
-    const declined = guests.filter(g => g.rsvp_status === "declined").length;
-    const pending = guests.filter(g => g.rsvp_status === "pending").length;
-    const plusOnes = guests.filter(g => g.plus_one).length;
-    const totalInvited = guests.length + plusOnes;
+    // Count guests + their plus-ones per status
+    const confirmedGuests = guests.filter(g => g.rsvp_status === "confirmed");
+    const declinedGuests = guests.filter(g => g.rsvp_status === "declined");
+    const pendingGuests = guests.filter(g => g.rsvp_status === "pending");
+    
+    const confirmed = confirmedGuests.length + confirmedGuests.filter(g => g.plus_one).length;
+    const declined = declinedGuests.length + declinedGuests.filter(g => g.plus_one).length;
+    const pending = pendingGuests.length + pendingGuests.filter(g => g.plus_one).length;
+    const totalInvited = guests.length + guests.filter(g => g.plus_one).length;
+    
     onGuestStatsChange?.(confirmed, declined, pending, totalInvited);
   }, [guests, onGuestStatsChange]);
 
