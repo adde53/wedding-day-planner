@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Crown, Check, ArrowRight } from "lucide-react";
+import { Crown, Check, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +13,8 @@ interface PremiumGateProps {
   onClose: () => void;
   featureName: string;
   onUpgrade?: () => void;
+  onStartTrial?: () => void;
+  hasUsedTrial?: boolean;
 }
 
 const premiumFeatures = [
@@ -23,7 +25,14 @@ const premiumFeatures = [
   "Obegränsad tillgång till alla verktyg",
 ];
 
-export function PremiumGate({ isOpen, onClose, featureName, onUpgrade }: PremiumGateProps) {
+export function PremiumGate({ 
+  isOpen, 
+  onClose, 
+  featureName, 
+  onUpgrade,
+  onStartTrial,
+  hasUsedTrial = false
+}: PremiumGateProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
@@ -52,6 +61,17 @@ export function PremiumGate({ isOpen, onClose, featureName, onUpgrade }: Premium
             ))}
           </div>
 
+          {/* Free Trial Section */}
+          {!hasUsedTrial && (
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <p className="text-sm font-medium text-primary">Prova gratis i 7 dagar!</p>
+              </div>
+              <p className="text-xs text-muted-foreground">Inget kort krävs</p>
+            </div>
+          )}
+
           <div className="bg-gold-light rounded-xl p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Engångsbetalning</p>
             <p className="text-3xl font-serif font-bold text-foreground">199 kr</p>
@@ -59,13 +79,24 @@ export function PremiumGate({ isOpen, onClose, featureName, onUpgrade }: Premium
           </div>
 
           <div className="flex flex-col gap-3">
+            {!hasUsedTrial && (
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="w-full gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                onClick={onStartTrial}
+              >
+                <Sparkles className="w-4 h-4" />
+                Starta 7 dagars gratis provperiod
+              </Button>
+            )}
             <Button 
               size="lg" 
               className="w-full gap-2"
               onClick={onUpgrade}
             >
               <Crown className="w-4 h-4" />
-              Uppgradera nu
+              Köp Premium – 199 kr
               <ArrowRight className="w-4 h-4" />
             </Button>
             <Button 
