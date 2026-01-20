@@ -10,7 +10,9 @@ import { BudgetTracker } from "@/components/BudgetTracker";
 import { GuestList } from "@/components/GuestList";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { DrinkCalculator } from "@/components/DrinkCalculator";
-import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine } from "lucide-react";
+import { FoodCalculator } from "@/components/FoodCalculator";
+import { TablePlanner } from "@/components/TablePlanner";
+import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2 } from "lucide-react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -240,6 +242,26 @@ export default function Dashboard() {
             </motion.div>
           )}
 
+          {activeTab === "tables" && (
+            <motion.div
+              key="tables"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-8">
+                <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
+                  Bordsplacering
+                </h2>
+                <p className="text-muted-foreground">
+                  Skapa bord och placera era gäster
+                </p>
+              </div>
+              <TablePlanner confirmedGuests={guestStats.confirmed} />
+            </motion.div>
+          )}
+
           {activeTab === "budget" && (
             <motion.div
               key="budget"
@@ -260,6 +282,26 @@ export default function Dashboard() {
             </motion.div>
           )}
 
+          {activeTab === "food" && (
+            <motion.div
+              key="food"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-8">
+                <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
+                  Matkalkylator
+                </h2>
+                <p className="text-muted-foreground">
+                  Beräkna matmängder och få prisestimat för catering
+                </p>
+              </div>
+              <FoodCalculator confirmedGuests={guestStats.confirmed} />
+            </motion.div>
+          )}
+
           {activeTab === "drinks" && (
             <motion.div
               key="drinks"
@@ -276,7 +318,7 @@ export default function Dashboard() {
                   Beräkna hur mycket dryck ni behöver baserat på antal gäster
                 </p>
               </div>
-              <DrinkCalculator confirmedGuests={guestStats.confirmed} />
+              <DrinkCalculator confirmedGuests={guestStats.confirmed} weddingDate={weddingDate} />
             </motion.div>
           )}
 
