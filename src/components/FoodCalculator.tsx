@@ -8,11 +8,13 @@ import {
   Beef,
   Fish,
   Cake,
-  Coins
+  Coins,
+  PlusCircle
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -20,6 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { addBudgetItem } from "@/utils/budgetUtils";
+import { toast } from "sonner";
 
 interface FoodCalculatorProps {
   confirmedGuests: number;
@@ -40,11 +45,43 @@ interface PriceEstimate {
 }
 
 export function FoodCalculator({ confirmedGuests }: FoodCalculatorProps) {
+  const { user } = useAuth();
   const [guestCount, setGuestCount] = useState(confirmedGuests);
   const [mealType, setMealType] = useState<"buffet" | "sitdown" | "cocktail">("sitdown");
   const [courses, setCourses] = useState(3);
   const [results, setResults] = useState<FoodResult | null>(null);
   const [priceEstimate, setPriceEstimate] = useState<PriceEstimate | null>(null);
+  const [addingToBudget, setAddingToBudget] = useState(false);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("sv-SE", {
+      style: "currency",
+      currency: "SEK",
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
+  const handleAddToBudget = async (priceTier: "low" | "medium" | "high") => {
+    if (!user || !priceEstimate) return;
+    
+    setAddingToBudget(true);
+    const tierNames = { low: "budget", medium: "mellan", high: "premium" };
+    const amount = priceEstimate[priceTier];
+    
+    const success = await addBudgetItem(
+      user.id,
+      `Catering (${tierNames[priceTier]})`,
+      "Mat & Dryck",
+      amount
+    );
+
+    if (success) {
+      toast.success(`${formatPrice(amount)} tillagt i budgeten för mat!`);
+    } else {
+      toast.error("Kunde inte lägga till i budgeten");
+    }
+    setAddingToBudget(false);
+  };
 
   useEffect(() => {
     if (confirmedGuests > 0) {
@@ -101,13 +138,6 @@ export function FoodCalculator({ confirmedGuests }: FoodCalculatorProps) {
     });
   }, [guestCount, mealType, courses]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("sv-SE", {
-      style: "currency",
-      currency: "SEK",
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
 
   return (
     <div className="space-y-6">
@@ -257,6 +287,16 @@ export function FoodCalculator({ confirmedGuests }: FoodCalculatorProps) {
               <p className="text-xs text-muted-foreground mt-1">
                 ~{formatPrice(priceEstimate.low / guestCount)}/person
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3 gap-1"
+                onClick={() => handleAddToBudget("low")}
+                disabled={addingToBudget}
+              >
+                <PlusCircle className="w-3 h-3" />
+                Till budget
+              </Button>
             </div>
             <div className="text-center p-4 rounded-xl bg-gold-light border border-gold/30">
               <p className="text-xs text-muted-foreground mb-1">Mellanpris</p>
@@ -266,6 +306,16 @@ export function FoodCalculator({ confirmedGuests }: FoodCalculatorProps) {
               <p className="text-xs text-muted-foreground mt-1">
                 ~{formatPrice(priceEstimate.medium / guestCount)}/person
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3 gap-1"
+                onClick={() => handleAddToBudget("medium")}
+                disabled={addingToBudget}
+              >
+                <PlusCircle className="w-3 h-3" />
+                Till budget
+              </Button>
             </div>
             <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/30">
               <p className="text-xs text-muted-foreground mb-1">Premium</p>
@@ -275,6 +325,16 @@ export function FoodCalculator({ confirmedGuests }: FoodCalculatorProps) {
               <p className="text-xs text-muted-foreground mt-1">
                 ~{formatPrice(priceEstimate.high / guestCount)}/person
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3 gap-1"
+                onClick={() => handleAddToBudget("high")}
+                disabled={addingToBudget}
+              >
+                <PlusCircle className="w-3 h-3" />
+                Till budget
+              </Button>
             </div>
           </div>
 

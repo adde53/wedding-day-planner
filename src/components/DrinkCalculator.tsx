@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Wine, Beer, GlassWater, Sparkles, Users, Calculator, Calendar, Coins } from "lucide-react";
+import { Wine, Beer, GlassWater, Sparkles, Users, Calculator, Calendar, Coins, PlusCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,9 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
+import { useAuth } from "@/contexts/AuthContext";
+import { addBudgetItem } from "@/utils/budgetUtils";
+import { toast } from "sonner";
 
 interface DrinkCalculatorProps {
   confirmedGuests: number;
@@ -43,12 +47,36 @@ const prices = {
 };
 
 export function DrinkCalculator({ confirmedGuests, weddingDate }: DrinkCalculatorProps) {
+  const { user } = useAuth();
   const [guestCount, setGuestCount] = useState(confirmedGuests);
   const [partyDuration, setPartyDuration] = useState(6);
   const [drinkingLevel, setDrinkingLevel] = useState<"light" | "moderate" | "heavy">("moderate");
   const [nonDrinkerPercent, setNonDrinkerPercent] = useState(20);
   const [results, setResults] = useState<DrinkResult | null>(null);
   const [priceEstimate, setPriceEstimate] = useState<PriceEstimate | null>(null);
+  const [addingToBudget, setAddingToBudget] = useState(false);
+
+  const handleAddToBudget = async (priceTier: "low" | "medium" | "high") => {
+    if (!user || !priceEstimate) return;
+    
+    setAddingToBudget(true);
+    const tierNames = { low: "budget", medium: "mellan", high: "premium" };
+    const amount = priceEstimate[priceTier];
+    
+    const success = await addBudgetItem(
+      user.id,
+      `Dryck (${tierNames[priceTier]})`,
+      "Mat & Dryck",
+      amount
+    );
+
+    if (success) {
+      toast.success(`${formatPrice(amount)} tillagt i budgeten för dryck!`);
+    } else {
+      toast.error("Kunde inte lägga till i budgeten");
+    }
+    setAddingToBudget(false);
+  };
 
   // Calculate days until wedding
   const today = new Date();
@@ -288,6 +316,16 @@ export function DrinkCalculator({ confirmedGuests, weddingDate }: DrinkCalculato
                 {formatPrice(priceEstimate.low)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">Systembolaget basic</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3 gap-1"
+                onClick={() => handleAddToBudget("low")}
+                disabled={addingToBudget}
+              >
+                <PlusCircle className="w-3 h-3" />
+                Till budget
+              </Button>
             </div>
             <div className="text-center p-4 rounded-xl bg-gold-light border border-gold/30">
               <p className="text-xs text-muted-foreground mb-1">Mellanpris</p>
@@ -295,6 +333,16 @@ export function DrinkCalculator({ confirmedGuests, weddingDate }: DrinkCalculato
                 {formatPrice(priceEstimate.medium)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">Bra kvalitet</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3 gap-1"
+                onClick={() => handleAddToBudget("medium")}
+                disabled={addingToBudget}
+              >
+                <PlusCircle className="w-3 h-3" />
+                Till budget
+              </Button>
             </div>
             <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/30">
               <p className="text-xs text-muted-foreground mb-1">Premium</p>
@@ -302,6 +350,16 @@ export function DrinkCalculator({ confirmedGuests, weddingDate }: DrinkCalculato
                 {formatPrice(priceEstimate.high)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">Lyxigare val</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3 gap-1"
+                onClick={() => handleAddToBudget("high")}
+                disabled={addingToBudget}
+              >
+                <PlusCircle className="w-3 h-3" />
+                Till budget
+              </Button>
             </div>
           </div>
 
