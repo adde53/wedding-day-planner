@@ -14,8 +14,10 @@ interface DashboardHeaderProps {
 const tabs = [
   { id: "overview", label: "Översikt" },
   { id: "guests", label: "Gästlista" },
+  { id: "tables", label: "Bord" },
   { id: "checklist", label: "Checklista" },
   { id: "budget", label: "Budget" },
+  { id: "food", label: "Mat" },
   { id: "drinks", label: "Drycker" },
   { id: "settings", label: "Inställningar" },
 ];
