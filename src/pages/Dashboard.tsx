@@ -8,6 +8,7 @@ import { ProgressOverview } from "@/components/ProgressOverview";
 import { WeddingChecklist } from "@/components/WeddingChecklist";
 import { BudgetTracker } from "@/components/BudgetTracker";
 import { GuestList } from "@/components/GuestList";
+import { SettingsPanel } from "@/components/SettingsPanel";
 import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users } from "lucide-react";
 
 export default function Dashboard() {
@@ -87,7 +88,10 @@ export default function Dashboard() {
                       Fortsätt planera och håll koll på alla detaljer.
                     </p>
                   </div>
-                  <button className="p-2 rounded-lg hover:bg-muted transition-colors">
+                  <button 
+                    onClick={() => setActiveTab("settings")}
+                    className="p-2 rounded-lg hover:bg-muted transition-colors"
+                  >
                     <Settings className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
@@ -253,6 +257,26 @@ export default function Dashboard() {
               <BudgetTracker />
             </motion.div>
           )}
+
+          {activeTab === "settings" && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-8">
+                <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
+                  Inställningar
+                </h2>
+                <p className="text-muted-foreground">
+                  Hantera ert bröllop och era uppgifter
+                </p>
+              </div>
+              <SettingsPanel />
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
@@ -263,7 +287,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Heart className="w-5 h-5 text-primary" />
               <span className="font-serif text-lg font-medium text-foreground">
-                Wedding Planner Pro
+                Bröllopsplanerare
               </span>
             </div>
             <p className="text-sm text-muted-foreground">

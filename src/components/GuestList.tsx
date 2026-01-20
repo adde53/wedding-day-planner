@@ -6,8 +6,6 @@ import {
   Check, 
   X, 
   Clock, 
-  Mail, 
-  Phone, 
   Edit2, 
   Trash2, 
   ChevronDown,
@@ -40,13 +38,10 @@ import { toast } from "sonner";
 interface Guest {
   id: string;
   name: string;
-  email: string | null;
-  phone: string | null;
   dietary_restrictions: string | null;
   plus_one: boolean;
   plus_one_name: string | null;
   rsvp_status: "pending" | "confirmed" | "declined";
-  rsvp_date: string | null;
   notes: string | null;
 }
 
@@ -67,8 +62,6 @@ export function GuestList({ onGuestCountChange }: GuestListProps) {
   // Form state
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
-    phone: "",
     dietary_restrictions: "",
     plus_one: false,
     plus_one_name: "",
@@ -112,8 +105,6 @@ export function GuestList({ onGuestCountChange }: GuestListProps) {
   const resetForm = () => {
     setFormData({
       name: "",
-      email: "",
-      phone: "",
       dietary_restrictions: "",
       plus_one: false,
       plus_one_name: "",
@@ -130,8 +121,6 @@ export function GuestList({ onGuestCountChange }: GuestListProps) {
     const guestData = {
       ...formData,
       user_id: user.id,
-      email: formData.email || null,
-      phone: formData.phone || null,
       dietary_restrictions: formData.dietary_restrictions || null,
       plus_one_name: formData.plus_one ? formData.plus_one_name || null : null,
       notes: formData.notes || null,
@@ -173,8 +162,6 @@ export function GuestList({ onGuestCountChange }: GuestListProps) {
     setEditingGuest(guest);
     setFormData({
       name: guest.name,
-      email: guest.email || "",
-      phone: guest.phone || "",
       dietary_restrictions: guest.dietary_restrictions || "",
       plus_one: guest.plus_one,
       plus_one_name: guest.plus_one_name || "",
@@ -225,8 +212,7 @@ export function GuestList({ onGuestCountChange }: GuestListProps) {
 
   // Filtered guests
   const filteredGuests = guests.filter(guest => {
-    const matchesSearch = guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = guest.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filterStatus === "all" || guest.rsvp_status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -366,34 +352,13 @@ export function GuestList({ onGuestCountChange }: GuestListProps) {
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-post</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="email@exempel.se"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefon</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="070-123 45 67"
-                  />
-                </div>
-              </div>
               <div className="space-y-2">
-                <Label htmlFor="dietary">Kostpreferenser</Label>
+                <Label htmlFor="dietary">Allergier / Kostpreferenser</Label>
                 <Input
                   id="dietary"
                   value={formData.dietary_restrictions}
                   onChange={(e) => setFormData({ ...formData, dietary_restrictions: e.target.value })}
-                  placeholder="T.ex. vegetarian, glutenfri..."
+                  placeholder="T.ex. vegetarian, nötallergi..."
                 />
               </div>
               <div className="space-y-2">
@@ -550,26 +515,12 @@ export function GuestList({ onGuestCountChange }: GuestListProps) {
                         className="border-t border-border"
                       >
                         <div className="p-4 space-y-3 bg-muted/20">
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            {guest.email && (
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Mail className="w-4 h-4" />
-                                <span>{guest.email}</span>
-                              </div>
-                            )}
-                            {guest.phone && (
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Phone className="w-4 h-4" />
-                                <span>{guest.phone}</span>
-                              </div>
-                            )}
-                            {guest.dietary_restrictions && (
-                              <div className="flex items-center gap-2 text-muted-foreground col-span-2">
-                                <Utensils className="w-4 h-4" />
-                                <span>{guest.dietary_restrictions}</span>
-                              </div>
-                            )}
-                          </div>
+                          {guest.dietary_restrictions && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Utensils className="w-4 h-4" />
+                              <span>Allergier: {guest.dietary_restrictions}</span>
+                            </div>
+                          )}
                           {guest.notes && (
                             <p className="text-sm text-muted-foreground italic">
                               "{guest.notes}"
