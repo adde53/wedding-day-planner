@@ -55,14 +55,17 @@ export function ProgressOverview({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
-      className="bg-card rounded-2xl shadow-elevated border border-border p-8"
+      className="bg-card rounded-2xl shadow-elevated border border-border p-8 relative overflow-hidden"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+      {/* Subtle decorative gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-rose-light/30 via-transparent to-sage-light/40 pointer-events-none" />
+      
+      <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
         {/* Countdown */}
         <div className="text-center lg:text-left">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage-light mb-4">
-            <Heart className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Nedräkning</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-rose-light to-gold-light mb-4 shadow-sm">
+            <Heart className="w-4 h-4 text-rose" />
+            <span className="text-sm font-medium text-rose">Nedräkning</span>
           </div>
           <h2 className="text-5xl font-serif font-bold text-foreground mb-2">
             {daysUntilWedding > 0 ? daysUntilWedding : 0}
@@ -140,7 +143,7 @@ export function ProgressOverview({
         <div className="space-y-4">
           {/* Guest Stats */}
           {guestStats && (
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-primary/10 border border-primary/30">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-terracotta-light border border-primary/20 shadow-sm">
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary" />
               </div>
@@ -150,11 +153,11 @@ export function ProgressOverview({
                     {guestStats.total}
                   </p>
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="flex items-center gap-1 text-green-600">
+                    <span className="flex items-center gap-1 text-primary">
                       <UserCheck className="w-4 h-4" />
                       {guestStats.confirmed}
                     </span>
-                    <span className="flex items-center gap-1 text-red-500">
+                    <span className="flex items-center gap-1 text-rose">
                       <UserX className="w-4 h-4" />
                       {guestStats.declined}
                     </span>
@@ -165,9 +168,9 @@ export function ProgressOverview({
             </div>
           )}
 
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-sage/10 border border-sage/30">
-            <div className="w-10 h-10 rounded-full bg-sage/20 flex items-center justify-center">
-              <CheckCircle2 className="w-5 h-5 text-sage-dark" />
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-sage-light to-primary/5 border border-sage/20 shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-primary" />
             </div>
             <div>
               <p className="text-2xl font-serif font-semibold text-foreground">
@@ -177,8 +180,8 @@ export function ProgressOverview({
             </div>
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-gold-light/50 border border-gold/30">
-            <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-gold-light to-terracotta-light border border-gold/20 shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-gold/15 flex items-center justify-center">
               <Clock className="w-5 h-5 text-accent" />
             </div>
             <div>
