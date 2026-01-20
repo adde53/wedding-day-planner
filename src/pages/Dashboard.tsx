@@ -17,11 +17,11 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [completedTasks, setCompletedTasks] = useState(0);
-  const [guestCount, setGuestCount] = useState({ confirmed: 0, total: 0 });
+  const [guestStats, setGuestStats] = useState({ confirmed: 0, declined: 0, pending: 0, total: 0 });
   const totalTasks = 16;
 
-  const handleGuestCountChange = useCallback((confirmed: number, total: number) => {
-    setGuestCount({ confirmed, total });
+  const handleGuestStatsChange = useCallback((confirmed: number, declined: number, pending: number, total: number) => {
+    setGuestStats({ confirmed, declined, pending, total });
   }, []);
 
   // Get wedding date from profile or use default (8 months from now)
@@ -58,7 +58,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-subtle">
-      <DashboardHeader activeTab={activeTab} onTabChange={setActiveTab} guestCount={guestCount} />
+      <DashboardHeader activeTab={activeTab} onTabChange={setActiveTab} guestCount={{ confirmed: guestStats.confirmed, total: guestStats.total }} />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <AnimatePresence mode="wait">
@@ -102,6 +102,7 @@ export default function Dashboard() {
                 weddingDate={weddingDate}
                 completedTasks={completedTasks}
                 totalTasks={totalTasks}
+                guestStats={guestStats}
                 onWeddingDateChange={handleWeddingDateChange}
               />
 
@@ -121,7 +122,7 @@ export default function Dashboard() {
                     Gästlista
                   </h3>
                   <p className="text-muted-foreground text-sm">
-                    {guestCount.confirmed} av {guestCount.total} bekräftade
+                    {guestStats.confirmed} av {guestStats.total} bekräftade
                   </p>
                 </motion.button>
 
@@ -234,7 +235,7 @@ export default function Dashboard() {
                   Hantera era gäster och spåra RSVP-svar
                 </p>
               </div>
-              <GuestList onGuestCountChange={handleGuestCountChange} />
+              <GuestList onGuestStatsChange={handleGuestStatsChange} />
             </motion.div>
           )}
 

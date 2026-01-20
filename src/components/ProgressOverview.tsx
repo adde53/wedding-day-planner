@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Calendar, CheckCircle2, Clock, Pencil } from "lucide-react";
+import { Heart, Calendar, CheckCircle2, Clock, Pencil, Users, UserCheck, UserX } from "lucide-react";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
   Popover,
@@ -12,10 +11,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+interface GuestStats {
+  confirmed: number;
+  declined: number;
+  pending: number;
+  total: number;
+}
+
 interface ProgressOverviewProps {
   weddingDate: Date;
   completedTasks: number;
   totalTasks: number;
+  guestStats?: GuestStats;
   onWeddingDateChange?: (date: Date) => void;
 }
 
@@ -23,6 +30,7 @@ export function ProgressOverview({
   weddingDate,
   completedTasks,
   totalTasks,
+  guestStats,
   onWeddingDateChange,
 }: ProgressOverviewProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -130,6 +138,33 @@ export function ProgressOverview({
 
         {/* Stats */}
         <div className="space-y-4">
+          {/* Guest Stats */}
+          {guestStats && (
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-primary/10 border border-primary/30">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-serif font-semibold text-foreground">
+                    {guestStats.total}
+                  </p>
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="flex items-center gap-1 text-green-600">
+                      <UserCheck className="w-4 h-4" />
+                      {guestStats.confirmed}
+                    </span>
+                    <span className="flex items-center gap-1 text-red-500">
+                      <UserX className="w-4 h-4" />
+                      {guestStats.declined}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">Gäster bjudna</p>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center gap-4 p-4 rounded-xl bg-sage/10 border border-sage/30">
             <div className="w-10 h-10 rounded-full bg-sage/20 flex items-center justify-center">
               <CheckCircle2 className="w-5 h-5 text-sage-dark" />

@@ -46,10 +46,10 @@ interface Guest {
 }
 
 interface GuestListProps {
-  onGuestCountChange?: (confirmed: number, total: number) => void;
+  onGuestStatsChange?: (confirmed: number, declined: number, pending: number, total: number) => void;
 }
 
-export function GuestList({ onGuestCountChange }: GuestListProps) {
+export function GuestList({ onGuestStatsChange }: GuestListProps) {
   const { user } = useAuth();
   const [guests, setGuests] = useState<Guest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,11 +77,12 @@ export function GuestList({ onGuestCountChange }: GuestListProps) {
 
   useEffect(() => {
     const confirmed = guests.filter(g => g.rsvp_status === "confirmed").length;
-    const plusOnes = guests.filter(g => g.rsvp_status === "confirmed" && g.plus_one).length;
-    const totalConfirmed = confirmed + plusOnes;
-    const totalInvited = guests.length + guests.filter(g => g.plus_one).length;
-    onGuestCountChange?.(totalConfirmed, totalInvited);
-  }, [guests, onGuestCountChange]);
+    const declined = guests.filter(g => g.rsvp_status === "declined").length;
+    const pending = guests.filter(g => g.rsvp_status === "pending").length;
+    const plusOnes = guests.filter(g => g.plus_one).length;
+    const totalInvited = guests.length + plusOnes;
+    onGuestStatsChange?.(confirmed, declined, pending, totalInvited);
+  }, [guests, onGuestStatsChange]);
 
   const fetchGuests = async () => {
     if (!user) return;
