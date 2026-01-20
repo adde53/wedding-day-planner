@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +6,8 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 import { ProgressOverview } from "@/components/ProgressOverview";
 import { WeddingChecklist } from "@/components/WeddingChecklist";
 import { BudgetTracker } from "@/components/BudgetTracker";
-import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings } from "lucide-react";
+import { GuestList } from "@/components/GuestList";
+import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
@@ -14,7 +15,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [completedTasks, setCompletedTasks] = useState(0);
+  const [guestCount, setGuestCount] = useState({ confirmed: 0, total: 0 });
   const totalTasks = 16;
+
+  const handleGuestCountChange = useCallback((confirmed: number, total: number) => {
+    setGuestCount({ confirmed, total });
+  }, []);
 
   // Set wedding date to 8 months from now for demo
   const weddingDate = useMemo(() => {
@@ -41,7 +47,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-subtle">
-      <DashboardHeader activeTab={activeTab} onTabChange={setActiveTab} />
+      <DashboardHeader activeTab={activeTab} onTabChange={setActiveTab} guestCount={guestCount} />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <AnimatePresence mode="wait">
@@ -85,11 +91,29 @@ export default function Dashboard() {
               />
 
               {/* Quick Actions */}
-              <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <motion.button
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
+                  onClick={() => setActiveTab("guests")}
+                  className="bg-card rounded-2xl p-6 shadow-sm border border-border hover:shadow-md transition-all text-left group"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                    <Users className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-serif text-xl font-medium text-foreground mb-2">
+                    Gästlista
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    {guestCount.confirmed} av {guestCount.total} bekräftade
+                  </p>
+                </motion.button>
+
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
                   onClick={() => setActiveTab("checklist")}
                   className="bg-card rounded-2xl p-6 shadow-sm border border-border hover:shadow-md transition-all text-left group"
                 >
@@ -125,7 +149,7 @@ export default function Dashboard() {
                 <motion.button
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
+                  transition={{ delay: 0.25 }}
                   className="bg-card rounded-2xl p-6 shadow-sm border border-border hover:shadow-md transition-all text-left group"
                 >
                   <div className="w-12 h-12 rounded-xl bg-taupe-light flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
@@ -176,6 +200,26 @@ export default function Dashboard() {
                 </p>
               </div>
               <WeddingChecklist onProgressChange={setCompletedTasks} />
+            </motion.div>
+          )}
+
+          {activeTab === "guests" && (
+            <motion.div
+              key="guests"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-8">
+                <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
+                  Gästlista
+                </h2>
+                <p className="text-muted-foreground">
+                  Hantera era gäster och spåra RSVP-svar
+                </p>
+              </div>
+              <GuestList onGuestCountChange={handleGuestCountChange} />
             </motion.div>
           )}
 
