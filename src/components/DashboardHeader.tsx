@@ -48,7 +48,7 @@ export function DashboardHeader({ activeTab, onTabChange, guestCount, onPremiumC
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+    <header className="sticky top-0 z-50 bg-background/70 backdrop-blur-lg border-b border-border/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -58,7 +58,7 @@ export function DashboardHeader({ activeTab, onTabChange, guestCount, onPremiumC
             className="flex items-center gap-3"
           >
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-sage-gradient flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md shadow-primary/20">
                 <Heart className="w-5 h-5 text-primary-foreground" />
               </div>
               <h1 className="font-serif text-xl font-medium text-foreground">
@@ -74,15 +74,15 @@ export function DashboardHeader({ activeTab, onTabChange, guestCount, onPremiumC
                 key={tab.id}
                 onClick={() => handleTabClick(tab)}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1",
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5",
                   activeTab === tab.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
                 )}
               >
                 {tab.label}
                 {tab.premium && !isPremium && (
-                  <Crown className="w-3 h-3 text-gold" />
+                  <Crown className="w-3.5 h-3.5 text-gold" />
                 )}
               </button>
             ))}

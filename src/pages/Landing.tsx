@@ -71,13 +71,13 @@ export default function Landing() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-hero-gradient">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-sage-gradient flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md shadow-primary/20">
                 <Heart className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-serif text-xl font-medium text-foreground">
@@ -87,7 +87,7 @@ export default function Landing() {
             <div className="flex items-center gap-4">
               {user ? (
                 <Link to="/dashboard">
-                  <Button className="bg-primary hover:bg-primary/90">
+                  <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
                     Min planering
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
@@ -100,7 +100,7 @@ export default function Landing() {
                     </Button>
                   </Link>
                   <Link to="/auth">
-                    <Button className="bg-primary hover:bg-primary/90">
+                    <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
                       Kom igång gratis
                     </Button>
                   </Link>
@@ -112,17 +112,22 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
+      <section className="pt-32 pb-20 px-4 sm:px-6 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-40 left-10 w-64 h-64 bg-rose-light/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-60 right-10 w-72 h-72 bg-gold-light/50 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-20 left-1/3 w-48 h-48 bg-sage-light/60 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="max-w-6xl mx-auto relative">
           <div className="max-w-3xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage-light border border-sage/20 mb-6">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-rose-light to-gold-light border border-rose/20 mb-6 shadow-sm">
+                <Sparkles className="w-4 h-4 text-rose" />
+                <span className="text-sm font-medium text-rose">
                   Sveriges smartaste bröllopsplanerare
                 </span>
               </div>
@@ -154,13 +159,13 @@ export default function Landing() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
               <Link to="/auth">
-                <Button size="lg" className="h-14 px-8 bg-primary hover:bg-primary/90 text-lg shadow-lg">
+                <Button size="lg" className="h-14 px-8 bg-primary hover:bg-primary/90 text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all">
                   Skapa gratis konto
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
               <a href="#pricing">
-                <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-border">
+                <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-border bg-card/50 backdrop-blur-sm hover:bg-card">
                   Se priser
                 </Button>
               </a>
@@ -189,7 +194,7 @@ export default function Landing() {
       </section>
 
       {/* Free Features Section */}
-      <section className="py-20 px-4 sm:px-6 bg-muted/30">
+      <section className="py-20 px-4 sm:px-6 bg-gradient-to-b from-transparent via-muted/40 to-muted/30">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -198,7 +203,7 @@ export default function Landing() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage-light border border-sage/20 mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-sage-light to-primary/10 border border-primary/20 mb-4 shadow-sm">
               <Check className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">Helt gratis</span>
             </div>
@@ -218,10 +223,10 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="bg-card rounded-2xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow"
+                className="bg-card rounded-2xl p-8 shadow-sm border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
               >
                 <div 
-                  className="w-14 h-14 rounded-xl bg-sage-light flex items-center justify-center mb-6"
+                  className="w-14 h-14 rounded-xl bg-gradient-to-br from-sage-light to-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
                 >
                   <feature.icon className="w-7 h-7 text-primary" />
                 </div>
@@ -229,7 +234,7 @@ export default function Landing() {
                   <h3 className="font-serif text-2xl font-medium text-foreground">
                     {feature.title}
                   </h3>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-sage-light text-primary">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                     Gratis
                   </span>
                 </div>
@@ -243,7 +248,7 @@ export default function Landing() {
       </section>
 
       {/* Premium Features Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-6">
+      <section id="pricing" className="py-20 px-4 sm:px-6 bg-gradient-to-b from-muted/30 to-transparent">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -252,7 +257,7 @@ export default function Landing() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold-light border border-gold/30 mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-gold-light to-terracotta-light border border-gold/30 mb-4 shadow-sm">
               <Crown className="w-4 h-4 text-accent" />
               <span className="text-sm font-medium text-accent">Premium</span>
             </div>
@@ -272,13 +277,13 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="bg-card rounded-2xl p-8 shadow-sm border-2 border-gold/30 hover:shadow-md transition-shadow relative overflow-hidden"
+                className="bg-card rounded-2xl p-8 shadow-sm border-2 border-gold/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group"
               >
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gold-light rounded-bl-3xl flex items-end justify-start p-2">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-gold-light to-transparent rounded-bl-3xl flex items-end justify-start p-2">
                   <Crown className="w-5 h-5 text-accent" />
                 </div>
                 <div 
-                  className="w-14 h-14 rounded-xl bg-gold-light flex items-center justify-center mb-6"
+                  className="w-14 h-14 rounded-xl bg-gradient-to-br from-gold-light to-terracotta-light flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
                 >
                   <feature.icon className="w-7 h-7 text-accent" />
                 </div>
@@ -298,14 +303,15 @@ export default function Landing() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="max-w-md mx-auto bg-card rounded-2xl p-8 shadow-lg border-2 border-gold/30"
+            className="max-w-md mx-auto bg-card rounded-2xl p-8 shadow-xl border-2 border-gold/30 relative overflow-hidden"
           >
-            <div className="text-center mb-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-gold-light/30 via-transparent to-rose-light/20 pointer-events-none" />
+            <div className="relative text-center mb-6">
               <p className="text-sm text-muted-foreground mb-2">Premium - Engångsbetalning</p>
               <p className="text-5xl font-serif font-bold text-foreground">199 kr</p>
               <p className="text-sm text-muted-foreground mt-2">Livstids tillgång</p>
             </div>
-            <ul className="space-y-3 mb-8">
+            <ul className="relative space-y-3 mb-8">
               {[
                 "Dryckeskalkylator med prisestimat",
                 "Matkalkylator med cateringpriser", 
@@ -320,7 +326,7 @@ export default function Landing() {
               ))}
             </ul>
             <Link to="/auth">
-              <Button size="lg" className="w-full gap-2">
+              <Button size="lg" className="relative w-full gap-2 shadow-lg shadow-primary/20">
                 <Crown className="w-4 h-4" />
                 Kom igång nu
               </Button>
@@ -337,21 +343,25 @@ export default function Landing() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="bg-sage-gradient rounded-3xl p-12 text-center shadow-xl"
+            className="bg-gradient-to-br from-primary via-primary to-primary/90 rounded-3xl p-12 text-center shadow-2xl shadow-primary/30 relative overflow-hidden"
           >
+            {/* Decorative circles */}
+            <div className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute bottom-0 right-0 w-60 h-60 bg-white/5 rounded-full blur-3xl" />
+            
             <div 
-              className="w-16 h-16 rounded-2xl bg-primary-foreground/20 flex items-center justify-center mx-auto mb-6"
+              className="relative w-16 h-16 rounded-2xl bg-primary-foreground/20 flex items-center justify-center mx-auto mb-6"
             >
               <Heart className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h2 className="font-serif text-3xl sm:text-4xl font-medium text-primary-foreground mb-4">
+            <h2 className="relative font-serif text-3xl sm:text-4xl font-medium text-primary-foreground mb-4">
               Redo att börja planera?
             </h2>
-            <p className="text-lg text-primary-foreground/80 mb-8 max-w-lg mx-auto">
+            <p className="relative text-lg text-primary-foreground/80 mb-8 max-w-lg mx-auto">
               Skapa ett gratis konto och ta första steget mot ert drömbröllop. Uppgradera till Premium när ni är redo.
             </p>
             <Link to="/auth">
-              <Button size="lg" className="h-14 px-10 bg-card text-foreground hover:bg-card/90 text-lg shadow-lg">
+              <Button size="lg" className="relative h-14 px-10 bg-card text-foreground hover:bg-card/90 text-lg shadow-lg hover:shadow-xl transition-all">
                 Skapa gratis konto
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>

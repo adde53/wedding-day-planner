@@ -4,133 +4,157 @@
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
-/* Wedding Planner Pro - Refined Elegant Design System */
+/* MittBröllop.se - Elegant & Lively Design System */
 
 @layer base {
   :root {
-    /* Clean, sophisticated neutral palette */
-    --background: 40 20% 98%;
-    --foreground: 220 20% 15%;
+    /* Warm, inviting background with subtle warmth */
+    --background: 35 30% 98%;
+    --foreground: 220 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 15%;
+    --card-foreground: 220 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 15%;
+    --popover-foreground: 220 25% 12%;
 
-    /* Sophisticated olive/sage primary */
-    --primary: 150 25% 35%;
+    /* Rich eucalyptus green - more vibrant primary */
+    --primary: 158 35% 38%;
     --primary-foreground: 0 0% 100%;
 
-    /* Warm taupe secondary */
-    --secondary: 30 15% 90%;
-    --secondary-foreground: 220 20% 20%;
+    /* Warm blush secondary */
+    --secondary: 25 35% 92%;
+    --secondary-foreground: 220 25% 18%;
 
-    /* Warm muted tones */
-    --muted: 40 15% 94%;
-    --muted-foreground: 220 10% 45%;
+    /* Soft warm muted tones */
+    --muted: 30 20% 94%;
+    --muted-foreground: 220 15% 40%;
 
-    /* Warm gold accent */
-    --accent: 38 60% 50%;
-    --accent-foreground: 38 80% 15%;
+    /* Luxurious warm gold accent */
+    --accent: 42 75% 55%;
+    --accent-foreground: 42 90% 12%;
 
-    --destructive: 0 70% 50%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 15% 88%;
-    --input: 40 15% 88%;
-    --ring: 150 25% 35%;
+    --border: 30 20% 88%;
+    --input: 30 20% 88%;
+    --ring: 158 35% 38%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
-    /* Custom wedding tokens */
-    --sage: 150 25% 35%;
-    --sage-light: 150 20% 92%;
-    --sage-muted: 150 15% 75%;
-    --taupe: 30 15% 70%;
-    --taupe-light: 30 12% 92%;
-    --gold: 38 60% 50%;
-    --gold-light: 38 40% 88%;
-    --cream: 40 30% 96%;
-    --charcoal: 220 20% 20%;
-    --warm-gray: 30 8% 60%;
+    /* Custom wedding tokens - more vibrant */
+    --sage: 158 35% 38%;
+    --sage-light: 158 30% 94%;
+    --sage-muted: 158 20% 70%;
+    --taupe: 25 20% 65%;
+    --taupe-light: 25 25% 94%;
+    --gold: 42 75% 55%;
+    --gold-light: 42 50% 90%;
+    --cream: 35 40% 97%;
+    --charcoal: 220 25% 15%;
+    --warm-gray: 25 12% 55%;
+    
+    /* New accent colors for more life */
+    --rose: 350 60% 65%;
+    --rose-light: 350 50% 95%;
+    --terracotta: 18 55% 55%;
+    --terracotta-light: 18 45% 92%;
+    --lavender: 270 35% 70%;
+    --lavender-light: 270 30% 95%;
 
-    /* Gradients */
-    --gradient-subtle: linear-gradient(135deg, hsl(40 20% 98%) 0%, hsl(150 15% 96%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(38 60% 50%) 0%, hsl(45 70% 60%) 100%);
-    --gradient-sage: linear-gradient(135deg, hsl(150 25% 35%) 0%, hsl(160 20% 45%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 20% 98%) 100%);
+    /* Enhanced gradients */
+    --gradient-subtle: linear-gradient(135deg, hsl(35 30% 98%) 0%, hsl(158 25% 96%) 50%, hsl(42 40% 97%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(42 75% 55%) 0%, hsl(38 80% 62%) 100%);
+    --gradient-sage: linear-gradient(135deg, hsl(158 35% 38%) 0%, hsl(165 30% 48%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(35 30% 98%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(350 50% 95%) 0%, hsl(42 50% 95%) 50%, hsl(158 30% 94%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(35 30% 98%) 0%, hsl(25 35% 96%) 30%, hsl(158 25% 95%) 100%);
 
-    /* Shadows */
-    --shadow-xs: 0 1px 2px 0 hsl(220 20% 15% / 0.03);
-    --shadow-sm: 0 1px 3px 0 hsl(220 20% 15% / 0.04), 0 1px 2px -1px hsl(220 20% 15% / 0.04);
-    --shadow-md: 0 4px 6px -1px hsl(220 20% 15% / 0.05), 0 2px 4px -2px hsl(220 20% 15% / 0.05);
-    --shadow-lg: 0 10px 15px -3px hsl(220 20% 15% / 0.06), 0 4px 6px -4px hsl(220 20% 15% / 0.06);
-    --shadow-xl: 0 20px 25px -5px hsl(220 20% 15% / 0.08), 0 8px 10px -6px hsl(220 20% 15% / 0.08);
+    /* Enhanced shadows with color */
+    --shadow-xs: 0 1px 2px 0 hsl(220 25% 12% / 0.03);
+    --shadow-sm: 0 1px 3px 0 hsl(220 25% 12% / 0.05), 0 1px 2px -1px hsl(220 25% 12% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(220 25% 12% / 0.06), 0 2px 4px -2px hsl(220 25% 12% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(220 25% 12% / 0.08), 0 4px 6px -4px hsl(220 25% 12% / 0.06);
+    --shadow-xl: 0 20px 25px -5px hsl(220 25% 12% / 0.1), 0 8px 10px -6px hsl(220 25% 12% / 0.08);
+    --shadow-glow: 0 0 20px hsl(158 35% 38% / 0.15);
+    --shadow-gold: 0 4px 14px -3px hsl(42 75% 55% / 0.25);
 
-    --sidebar-background: 40 20% 98%;
-    --sidebar-foreground: 220 20% 15%;
-    --sidebar-primary: 150 25% 35%;
+    --sidebar-background: 35 30% 98%;
+    --sidebar-foreground: 220 25% 12%;
+    --sidebar-primary: 158 35% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 15% 90%;
-    --sidebar-accent-foreground: 220 20% 20%;
-    --sidebar-border: 40 15% 88%;
-    --sidebar-ring: 150 25% 35%;
+    --sidebar-accent: 25 35% 92%;
+    --sidebar-accent-foreground: 220 25% 18%;
+    --sidebar-border: 30 20% 88%;
+    --sidebar-ring: 158 35% 38%;
   }
 
   .dark {
-    --background: 220 20% 8%;
-    --foreground: 40 15% 95%;
+    --background: 220 22% 7%;
+    --foreground: 35 25% 95%;
 
-    --card: 220 18% 12%;
-    --card-foreground: 40 15% 95%;
+    --card: 220 20% 11%;
+    --card-foreground: 35 25% 95%;
 
-    --popover: 220 18% 12%;
-    --popover-foreground: 40 15% 95%;
+    --popover: 220 20% 11%;
+    --popover-foreground: 35 25% 95%;
 
-    --primary: 150 30% 50%;
-    --primary-foreground: 220 20% 8%;
+    --primary: 158 40% 50%;
+    --primary-foreground: 220 22% 7%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 40 15% 90%;
+    --secondary: 220 18% 16%;
+    --secondary-foreground: 35 20% 92%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 40 10% 55%;
+    --muted: 220 18% 16%;
+    --muted-foreground: 35 15% 55%;
 
-    --accent: 38 50% 45%;
-    --accent-foreground: 38 60% 95%;
+    --accent: 42 65% 50%;
+    --accent-foreground: 42 70% 95%;
 
-    --destructive: 0 60% 45%;
+    --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: 150 30% 50%;
+    --border: 220 18% 18%;
+    --input: 220 18% 18%;
+    --ring: 158 40% 50%;
 
-    --sage: 150 30% 50%;
-    --sage-light: 150 20% 18%;
-    --sage-muted: 150 15% 35%;
-    --taupe: 30 10% 40%;
-    --taupe-light: 30 8% 18%;
-    --gold: 38 50% 45%;
-    --gold-light: 38 30% 20%;
-    --cream: 220 15% 12%;
-    --charcoal: 40 15% 90%;
-    --warm-gray: 30 5% 50%;
+    --sage: 158 40% 50%;
+    --sage-light: 158 25% 16%;
+    --sage-muted: 158 20% 35%;
+    --taupe: 25 15% 40%;
+    --taupe-light: 25 12% 16%;
+    --gold: 42 65% 50%;
+    --gold-light: 42 35% 18%;
+    --cream: 220 18% 11%;
+    --charcoal: 35 20% 92%;
+    --warm-gray: 25 10% 50%;
+    
+    --rose: 350 50% 55%;
+    --rose-light: 350 30% 16%;
+    --terracotta: 18 45% 48%;
+    --terracotta-light: 18 30% 16%;
+    --lavender: 270 30% 55%;
+    --lavender-light: 270 20% 16%;
 
-    --gradient-subtle: linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 18% 12%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(38 50% 45%) 0%, hsl(45 60% 55%) 100%);
-    --gradient-sage: linear-gradient(135deg, hsl(150 30% 50%) 0%, hsl(160 25% 55%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(220 18% 12%) 0%, hsl(220 20% 10%) 100%);
+    --gradient-subtle: linear-gradient(135deg, hsl(220 22% 7%) 0%, hsl(220 20% 11%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(42 65% 50%) 0%, hsl(38 70% 58%) 100%);
+    --gradient-sage: linear-gradient(135deg, hsl(158 40% 50%) 0%, hsl(165 35% 55%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(220 20% 11%) 0%, hsl(220 22% 9%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(350 30% 16%) 0%, hsl(42 35% 16%) 50%, hsl(158 25% 16%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(220 22% 7%) 0%, hsl(220 20% 10%) 100%);
 
-    --sidebar-background: 220 20% 8%;
-    --sidebar-foreground: 40 15% 95%;
-    --sidebar-primary: 150 30% 50%;
-    --sidebar-primary-foreground: 220 20% 8%;
-    --sidebar-accent: 220 15% 18%;
-    --sidebar-accent-foreground: 40 15% 90%;
-    --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 150 30% 50%;
+    --shadow-glow: 0 0 20px hsl(158 40% 50% / 0.2);
+    --shadow-gold: 0 4px 14px -3px hsl(42 65% 50% / 0.3);
+
+    --sidebar-background: 220 22% 7%;
+    --sidebar-foreground: 35 25% 95%;
+    --sidebar-primary: 158 40% 50%;
+    --sidebar-primary-foreground: 220 22% 7%;
+    --sidebar-accent: 220 18% 16%;
+    --sidebar-accent-foreground: 35 20% 92%;
+    --sidebar-border: 220 18% 18%;
+    --sidebar-ring: 158 40% 50%;
   }
 }
 
@@ -173,6 +197,14 @@
   .bg-card-gradient {
     background: var(--gradient-card);
   }
+  
+  .bg-warm-gradient {
+    background: var(--gradient-warm);
+  }
+  
+  .bg-hero-gradient {
+    background: var(--gradient-hero);
+  }
 
   .shadow-xs {
     box-shadow: var(--shadow-xs);
@@ -180,6 +212,14 @@
 
   .shadow-elevated {
     box-shadow: var(--shadow-xl);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
   }
 
   .text-gradient-gold {
@@ -194,5 +234,45 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+  
+  /* Hover effects for more life */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-lift:hover {
+    @apply -translate-y-1;
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  /* Card shine effect */
+  .card-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .card-shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.1),
+      transparent
+    );
+    transition: left 0.5s ease;
+  }
+  
+  .card-shine:hover::before {
+    left: 100%;
   }
 }
