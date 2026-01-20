@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { usePremium } from "@/hooks/usePremium";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { ProgressOverview } from "@/components/ProgressOverview";
 import { WeddingChecklist } from "@/components/WeddingChecklist";
@@ -12,15 +13,19 @@ import { SettingsPanel } from "@/components/SettingsPanel";
 import { DrinkCalculator } from "@/components/DrinkCalculator";
 import { FoodCalculator } from "@/components/FoodCalculator";
 import { TablePlanner } from "@/components/TablePlanner";
-import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2 } from "lucide-react";
+import { PremiumGate } from "@/components/PremiumGate";
+import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2, Crown } from "lucide-react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const { profile, updateWeddingDate } = useProfile();
+  const { isPremium, activatePremium } = usePremium();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [completedTasks, setCompletedTasks] = useState(0);
   const [guestStats, setGuestStats] = useState({ confirmed: 0, declined: 0, pending: 0, total: 0 });
+  const [premiumGateOpen, setPremiumGateOpen] = useState(false);
+  const [premiumFeatureName, setPremiumFeatureName] = useState("");
   const totalTasks = 16;
 
   const handleGuestStatsChange = useCallback((confirmed: number, declined: number, pending: number, total: number) => {
@@ -61,7 +66,16 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-subtle">
-      <DashboardHeader activeTab={activeTab} onTabChange={setActiveTab} guestCount={{ confirmed: guestStats.confirmed, total: guestStats.total }} />
+      <DashboardHeader 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+        guestCount={{ confirmed: guestStats.confirmed, total: guestStats.total }}
+        isPremium={isPremium}
+        onPremiumClick={(featureName) => {
+          setPremiumFeatureName(featureName);
+          setPremiumGateOpen(true);
+        }}
+      />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <AnimatePresence mode="wait">
@@ -351,7 +365,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Heart className="w-5 h-5 text-primary" />
               <span className="font-serif text-lg font-medium text-foreground">
-                Bröllopsplanerare
+                DittBröllop.se
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -360,6 +374,17 @@ export default function Dashboard() {
           </div>
         </div>
       </footer>
+
+      {/* Premium Gate Modal */}
+      <PremiumGate 
+        isOpen={premiumGateOpen}
+        onClose={() => setPremiumGateOpen(false)}
+        featureName={premiumFeatureName}
+        onUpgrade={() => {
+          activatePremium();
+          setPremiumGateOpen(false);
+        }}
+      />
     </div>
   );
 }
