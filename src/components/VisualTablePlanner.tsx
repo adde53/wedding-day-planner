@@ -71,53 +71,57 @@ const TABLE_SHAPES = [
   { id: "u-shape", label: "U-format bord", icon: "⊔" },
 ];
 
-const CHAIR_SIZE = 36;
+const CHAIR_SIZE = 32; // Visual size of chairs
+const CHAIR_GAP = 8; // Minimum gap between chairs
 
 // Calculate table size based on capacity - used by both chair positions and rendering
 const getTableSizeForCapacity = (shape: TableData["shape"], capacity: number) => {
+  const chairSpacing = CHAIR_SIZE + CHAIR_GAP; // Space needed per chair
+  
   switch (shape) {
     case "round": {
-      // Minimum circumference needed: capacity * (CHAIR_SIZE + gap)
-      const minCircumference = capacity * (CHAIR_SIZE + 12);
-      const minRadius = minCircumference / (2 * Math.PI);
-      // Table radius with padding, minimum 55
-      const tableRadius = Math.max(55, minRadius);
-      return { tableRadius, size: tableRadius * 2 };
+      // For round tables, chairs sit around the circumference
+      // Circumference needed = capacity * space per chair
+      const minCircumference = capacity * chairSpacing;
+      const orbitRadius = minCircumference / (2 * Math.PI);
+      // Table radius is smaller than orbit (chairs sit outside the table)
+      const tableRadius = Math.max(40, orbitRadius - CHAIR_SIZE / 2 - 10);
+      return { tableRadius, orbitRadius: Math.max(orbitRadius, tableRadius + CHAIR_SIZE / 2 + 10) };
     }
     case "rectangle": {
       const seatsPerSide = Math.ceil(capacity / 2);
-      const minWidth = seatsPerSide * (CHAIR_SIZE + 10);
-      const width = Math.max(160, minWidth);
-      const height = 70;
+      const width = Math.max(100, seatsPerSide * chairSpacing);
+      const height = 50;
       return { width, height };
     }
     case "square": {
       const perSide = Math.ceil(capacity / 4);
-      const minSize = perSide * (CHAIR_SIZE + 10);
-      const size = Math.max(90, minSize);
+      const size = Math.max(60, perSide * chairSpacing);
       return { size };
     }
     case "head": {
-      const width = Math.max(180, capacity * (CHAIR_SIZE + 14));
-      return { width, height: 40 };
+      const width = Math.max(120, capacity * chairSpacing);
+      return { width, height: 35 };
     }
     case "u-shape": {
-      const baseWidth = Math.max(200, capacity * 15);
-      const armHeight = Math.max(100, capacity * 8);
+      const baseSeats = Math.ceil(capacity * 0.5);
+      const armSeats = Math.ceil(capacity * 0.25);
+      const baseWidth = Math.max(150, baseSeats * chairSpacing);
+      const armHeight = Math.max(80, armSeats * chairSpacing);
       return { baseWidth, armHeight };
     }
     default:
-      return { size: 120 };
+      return { tableRadius: 50, orbitRadius: 80 };
   }
 };
 
 // Generate chair positions based on table shape
 const generateChairPositions = (shape: TableData["shape"], capacity: number): ChairData[] => {
   const chairs: ChairData[] = [];
+  const chairSpacing = CHAIR_SIZE + CHAIR_GAP;
   
   if (shape === "round") {
-    const { tableRadius } = getTableSizeForCapacity(shape, capacity);
-    const orbitRadius = tableRadius + CHAIR_SIZE / 2 + 8;
+    const { orbitRadius } = getTableSizeForCapacity(shape, capacity);
     for (let i = 0; i < capacity; i++) {
       const angle = ((360 / capacity) * i - 90) * (Math.PI / 180);
       chairs.push({
@@ -130,14 +134,15 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
     }
   } else if (shape === "head") {
     // Head table: all chairs on one side (front)
-    const { width: tableWidth } = getTableSizeForCapacity(shape, capacity);
-    const spacing = tableWidth / (capacity + 1);
+    const { width: tableWidth, height: tableHeight } = getTableSizeForCapacity(shape, capacity);
+    const totalWidth = capacity * chairSpacing;
+    const startX = -totalWidth / 2 + chairSpacing / 2;
     for (let i = 0; i < capacity; i++) {
       chairs.push({
         guestId: null,
         position: {
-          x: spacing * (i + 1) - tableWidth / 2,
-          y: -50,
+          x: startX + i * chairSpacing,
+          y: -tableHeight / 2 - CHAIR_SIZE / 2 - 8,
         },
       });
     }
@@ -148,13 +153,16 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
     const rightArm = Math.ceil(capacity * 0.25);
     const base = capacity - leftArm - rightArm;
     
+    const armSpacing = armHeight / (Math.max(leftArm, rightArm) + 1);
+    const baseSpacing = baseWidth / (base + 1);
+    
     // Left arm (outside)
     for (let i = 0; i < leftArm; i++) {
       chairs.push({
         guestId: null,
         position: {
-          x: -baseWidth / 2 - 30,
-          y: -armHeight / 2 + (armHeight / (leftArm + 1)) * (i + 1),
+          x: -baseWidth / 2 - CHAIR_SIZE / 2 - 10,
+          y: -armHeight / 2 + armSpacing * (i + 1),
         },
       });
     }
@@ -163,19 +171,18 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
       chairs.push({
         guestId: null,
         position: {
-          x: baseWidth / 2 + 30,
-          y: -armHeight / 2 + (armHeight / (rightArm + 1)) * (i + 1),
+          x: baseWidth / 2 + CHAIR_SIZE / 2 + 10,
+          y: -armHeight / 2 + armSpacing * (i + 1),
         },
       });
     }
     // Base (bottom)
-    const baseSpacing = baseWidth / (base + 1);
     for (let i = 0; i < base; i++) {
       chairs.push({
         guestId: null,
         position: {
           x: -baseWidth / 2 + baseSpacing * (i + 1),
-          y: armHeight / 2 + 30,
+          y: armHeight / 2 + CHAIR_SIZE / 2 + 10,
         },
       });
     }
@@ -184,24 +191,30 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
     const topCount = Math.ceil(capacity / 2);
     const bottomCount = capacity - topCount;
     
-    const topSpacing = tableWidth / (topCount + 1);
+    // Calculate spacing to fit chairs evenly
+    const topTotalWidth = topCount * chairSpacing;
+    const bottomTotalWidth = bottomCount * chairSpacing;
+    
+    // Top row
+    const topStartX = -topTotalWidth / 2 + chairSpacing / 2;
     for (let i = 0; i < topCount; i++) {
       chairs.push({
         guestId: null,
         position: {
-          x: -tableWidth / 2 + topSpacing * (i + 1),
-          y: -tableHeight / 2 - 30,
+          x: topStartX + i * chairSpacing,
+          y: -tableHeight / 2 - CHAIR_SIZE / 2 - 8,
         },
       });
     }
     
-    const bottomSpacing = tableWidth / (bottomCount + 1);
+    // Bottom row
+    const bottomStartX = -bottomTotalWidth / 2 + chairSpacing / 2;
     for (let i = 0; i < bottomCount; i++) {
       chairs.push({
         guestId: null,
         position: {
-          x: -tableWidth / 2 + bottomSpacing * (i + 1),
-          y: tableHeight / 2 + 30,
+          x: bottomStartX + i * chairSpacing,
+          y: tableHeight / 2 + CHAIR_SIZE / 2 + 8,
         },
       });
     }
@@ -209,32 +222,33 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
     // Square: distribute on all 4 sides
     const { size: tableSize } = getTableSizeForCapacity(shape, capacity);
     const perSide = Math.ceil(capacity / 4);
-    const sides = [
-      { dx: 0, dy: -1 }, // top
-      { dx: 1, dy: 0 },  // right
-      { dx: 0, dy: 1 },  // bottom
-      { dx: -1, dy: 0 }, // left
-    ];
     
     let chairIdx = 0;
-    for (let s = 0; s < 4 && chairIdx < capacity; s++) {
+    const sides = ["top", "right", "bottom", "left"];
+    
+    for (const side of sides) {
+      if (chairIdx >= capacity) break;
       const count = Math.min(perSide, capacity - chairIdx);
-      const spacing = tableSize / (count + 1);
+      const sideWidth = count * chairSpacing;
+      const startPos = -sideWidth / 2 + chairSpacing / 2;
       
       for (let i = 0; i < count && chairIdx < capacity; i++) {
         let x = 0, y = 0;
-        if (s === 0) { // top
-          x = -tableSize / 2 + spacing * (i + 1);
-          y = -tableSize / 2 - 30;
-        } else if (s === 1) { // right
-          x = tableSize / 2 + 30;
-          y = -tableSize / 2 + spacing * (i + 1);
-        } else if (s === 2) { // bottom
-          x = -tableSize / 2 + spacing * (i + 1);
-          y = tableSize / 2 + 30;
-        } else { // left
-          x = -tableSize / 2 - 30;
-          y = -tableSize / 2 + spacing * (i + 1);
+        const offset = startPos + i * chairSpacing;
+        const edgeDist = tableSize / 2 + CHAIR_SIZE / 2 + 8;
+        
+        if (side === "top") {
+          x = offset;
+          y = -edgeDist;
+        } else if (side === "right") {
+          x = edgeDist;
+          y = offset;
+        } else if (side === "bottom") {
+          x = offset;
+          y = edgeDist;
+        } else {
+          x = -edgeDist;
+          y = offset;
         }
         chairs.push({ guestId: null, position: { x, y } });
         chairIdx++;
@@ -544,8 +558,8 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     const sizeInfo = getTableSizeForCapacity(table.shape, table.capacity);
     switch (table.shape) {
       case "round": {
-        const size = (sizeInfo as { tableRadius: number; size: number }).size;
-        return { width: size, height: size };
+        const { tableRadius } = sizeInfo as { tableRadius: number; orbitRadius: number };
+        return { width: tableRadius * 2, height: tableRadius * 2 };
       }
       case "head": {
         const { width, height } = sizeInfo as { width: number; height: number };
@@ -560,11 +574,11 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
         return { width, height };
       }
       case "square": {
-        const size = (sizeInfo as { size: number }).size;
+        const { size } = sizeInfo as { size: number };
         return { width: size, height: size };
       }
       default:
-        return { width: 120, height: 120 };
+        return { width: 100, height: 100 };
     }
   };
 
