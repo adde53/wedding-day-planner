@@ -1,17 +1,18 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { ProgressOverview } from "@/components/ProgressOverview";
 import { WeddingChecklist } from "@/components/WeddingChecklist";
 import { BudgetTracker } from "@/components/BudgetTracker";
 import { GuestList } from "@/components/GuestList";
 import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
+  const { profile, updateWeddingDate } = useProfile();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [completedTasks, setCompletedTasks] = useState(0);
@@ -22,12 +23,21 @@ export default function Dashboard() {
     setGuestCount({ confirmed, total });
   }, []);
 
-  // Set wedding date to 8 months from now for demo
-  const weddingDate = useMemo(() => {
-    const date = new Date();
-    date.setMonth(date.getMonth() + 8);
-    return date;
-  }, []);
+  // Get wedding date from profile or use default (8 months from now)
+  const weddingDate = profile?.wedding_date
+    ? new Date(profile.wedding_date)
+    : (() => {
+        const date = new Date();
+        date.setMonth(date.getMonth() + 8);
+        return date;
+      })();
+
+  const handleWeddingDateChange = useCallback(
+    (date: Date) => {
+      updateWeddingDate(date);
+    },
+    [updateWeddingDate]
+  );
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -88,6 +98,7 @@ export default function Dashboard() {
                 weddingDate={weddingDate}
                 completedTasks={completedTasks}
                 totalTasks={totalTasks}
+                onWeddingDateChange={handleWeddingDateChange}
               />
 
               {/* Quick Actions */}

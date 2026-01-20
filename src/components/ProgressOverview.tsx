@@ -1,17 +1,31 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Calendar, CheckCircle2, Clock } from "lucide-react";
+import { Heart, Calendar, CheckCircle2, Clock, Pencil } from "lucide-react";
+import { format } from "date-fns";
+import { sv } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface ProgressOverviewProps {
   weddingDate: Date;
   completedTasks: number;
   totalTasks: number;
+  onWeddingDateChange?: (date: Date) => void;
 }
 
 export function ProgressOverview({
   weddingDate,
   completedTasks,
   totalTasks,
+  onWeddingDateChange,
 }: ProgressOverviewProps) {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const today = new Date();
   const daysUntilWedding = Math.ceil(
     (weddingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
@@ -20,6 +34,13 @@ export function ProgressOverview({
 
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date && onWeddingDateChange) {
+      onWeddingDateChange(date);
+      setIsCalendarOpen(false);
+    }
+  };
 
   return (
     <motion.div
@@ -36,17 +57,32 @@ export function ProgressOverview({
             <span className="text-sm font-medium text-primary">Nedräkning</span>
           </div>
           <h2 className="text-5xl font-serif font-bold text-foreground mb-2">
-            {daysUntilWedding}
+            {daysUntilWedding > 0 ? daysUntilWedding : 0}
           </h2>
           <p className="text-muted-foreground">dagar kvar till bröllopet</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            {weddingDate.toLocaleDateString("sv-SE", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
+          
+          {/* Editable Wedding Date */}
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+            <PopoverTrigger asChild>
+              <button className="mt-3 group flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Calendar className="w-4 h-4" />
+                <span>
+                  {format(weddingDate, "EEEE d MMMM yyyy", { locale: sv })}
+                </span>
+                <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={weddingDate}
+                onSelect={handleDateSelect}
+                disabled={(date) => date < today}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Circular Progress */}
