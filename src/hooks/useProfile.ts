@@ -66,10 +66,9 @@ export function useProfile() {
         setProfile((prev) =>
           prev ? { ...prev, wedding_date: dateString } : null
         );
-        toast.success("Bröllopsdatum uppdaterat!");
       } catch (error) {
         console.error("Error updating wedding date:", error);
-        toast.error("Kunde inte uppdatera bröllopsdatum");
+        throw error;
       }
     },
     [user]
@@ -88,10 +87,9 @@ export function useProfile() {
         if (error) throw error;
 
         setProfile((prev) => (prev ? { ...prev, ...updates } : null));
-        toast.success("Profil uppdaterad!");
       } catch (error) {
         console.error("Error updating profile:", error);
-        toast.error("Kunde inte uppdatera profil");
+        throw error;
       }
     },
     [user]
