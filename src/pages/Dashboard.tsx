@@ -365,7 +365,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Heart className="w-5 h-5 text-primary" />
               <span className="font-serif text-lg font-medium text-foreground">
-                DittBröllop.se
+                mittBröllop.se
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
