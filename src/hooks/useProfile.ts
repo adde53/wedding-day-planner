@@ -66,8 +66,11 @@ export function useProfile() {
         setProfile((prev) =>
           prev ? { ...prev, wedding_date: dateString } : null
         );
+        
+        toast.success("Bröllopsdatum uppdaterat!");
       } catch (error) {
         console.error("Error updating wedding date:", error);
+        toast.error("Kunde inte uppdatera datumet");
         throw error;
       }
     },
