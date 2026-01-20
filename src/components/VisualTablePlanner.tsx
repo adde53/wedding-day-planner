@@ -71,15 +71,53 @@ const TABLE_SHAPES = [
   { id: "u-shape", label: "U-format bord", icon: "⊔" },
 ];
 
-const CHAIR_SIZE = 40;
+const CHAIR_SIZE = 36;
+
+// Calculate table size based on capacity - used by both chair positions and rendering
+const getTableSizeForCapacity = (shape: TableData["shape"], capacity: number) => {
+  switch (shape) {
+    case "round": {
+      // Minimum circumference needed: capacity * (CHAIR_SIZE + gap)
+      const minCircumference = capacity * (CHAIR_SIZE + 12);
+      const minRadius = minCircumference / (2 * Math.PI);
+      // Table radius with padding, minimum 55
+      const tableRadius = Math.max(55, minRadius);
+      return { tableRadius, size: tableRadius * 2 };
+    }
+    case "rectangle": {
+      const seatsPerSide = Math.ceil(capacity / 2);
+      const minWidth = seatsPerSide * (CHAIR_SIZE + 10);
+      const width = Math.max(160, minWidth);
+      const height = 70;
+      return { width, height };
+    }
+    case "square": {
+      const perSide = Math.ceil(capacity / 4);
+      const minSize = perSide * (CHAIR_SIZE + 10);
+      const size = Math.max(90, minSize);
+      return { size };
+    }
+    case "head": {
+      const width = Math.max(180, capacity * (CHAIR_SIZE + 14));
+      return { width, height: 40 };
+    }
+    case "u-shape": {
+      const baseWidth = Math.max(200, capacity * 15);
+      const armHeight = Math.max(100, capacity * 8);
+      return { baseWidth, armHeight };
+    }
+    default:
+      return { size: 120 };
+  }
+};
 
 // Generate chair positions based on table shape
 const generateChairPositions = (shape: TableData["shape"], capacity: number): ChairData[] => {
   const chairs: ChairData[] = [];
   
   if (shape === "round") {
-    const tableRadius = capacity <= 6 ? 55 : capacity <= 10 ? 70 : 85;
-    const orbitRadius = tableRadius + CHAIR_SIZE / 2 + 5;
+    const { tableRadius } = getTableSizeForCapacity(shape, capacity);
+    const orbitRadius = tableRadius + CHAIR_SIZE / 2 + 8;
     for (let i = 0; i < capacity; i++) {
       const angle = ((360 / capacity) * i - 90) * (Math.PI / 180);
       chairs.push({
@@ -92,7 +130,7 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
     }
   } else if (shape === "head") {
     // Head table: all chairs on one side (front)
-    const tableWidth = Math.max(180, capacity * 50);
+    const { width: tableWidth } = getTableSizeForCapacity(shape, capacity);
     const spacing = tableWidth / (capacity + 1);
     for (let i = 0; i < capacity; i++) {
       chairs.push({
@@ -105,13 +143,11 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
     }
   } else if (shape === "u-shape") {
     // U-shape: distribute on outside of U
-    const baseWidth = 200;
-    const armHeight = 100;
+    const { baseWidth, armHeight } = getTableSizeForCapacity(shape, capacity);
     const leftArm = Math.ceil(capacity * 0.25);
     const rightArm = Math.ceil(capacity * 0.25);
     const base = capacity - leftArm - rightArm;
     
-    let idx = 0;
     // Left arm (outside)
     for (let i = 0; i < leftArm; i++) {
       chairs.push({
@@ -121,7 +157,6 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
           y: -armHeight / 2 + (armHeight / (leftArm + 1)) * (i + 1),
         },
       });
-      idx++;
     }
     // Right arm (outside)
     for (let i = 0; i < rightArm; i++) {
@@ -132,7 +167,6 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
           y: -armHeight / 2 + (armHeight / (rightArm + 1)) * (i + 1),
         },
       });
-      idx++;
     }
     // Base (bottom)
     const baseSpacing = baseWidth / (base + 1);
@@ -146,8 +180,7 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
       });
     }
   } else if (shape === "rectangle") {
-    const tableWidth = 160;
-    const tableHeight = 70;
+    const { width: tableWidth, height: tableHeight } = getTableSizeForCapacity(shape, capacity);
     const topCount = Math.ceil(capacity / 2);
     const bottomCount = capacity - topCount;
     
@@ -174,7 +207,7 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
     }
   } else {
     // Square: distribute on all 4 sides
-    const tableSize = 90;
+    const { size: tableSize } = getTableSizeForCapacity(shape, capacity);
     const perSide = Math.ceil(capacity / 4);
     const sides = [
       { dx: 0, dy: -1 }, // top
@@ -185,7 +218,6 @@ const generateChairPositions = (shape: TableData["shape"], capacity: number): Ch
     
     let chairIdx = 0;
     for (let s = 0; s < 4 && chairIdx < capacity; s++) {
-      const side = sides[s];
       const count = Math.min(perSide, capacity - chairIdx);
       const spacing = tableSize / (count + 1);
       
@@ -509,23 +541,27 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   const totalAssigned = tables.reduce((sum, t) => sum + t.guests.length, 0);
 
   const getTableDimensions = (table: TableData) => {
+    const sizeInfo = getTableSizeForCapacity(table.shape, table.capacity);
     switch (table.shape) {
       case "round": {
-        const size = table.capacity <= 6 ? 110 : table.capacity <= 10 ? 140 : 170;
+        const size = (sizeInfo as { tableRadius: number; size: number }).size;
         return { width: size, height: size };
       }
       case "head": {
-        const width = Math.max(180, table.capacity * 50);
-        return { width, height: 40 };
+        const { width, height } = sizeInfo as { width: number; height: number };
+        return { width, height };
       }
       case "u-shape": {
-        return { width: 200, height: 120 };
+        const { baseWidth, armHeight } = sizeInfo as { baseWidth: number; armHeight: number };
+        return { width: baseWidth, height: armHeight };
       }
       case "rectangle": {
-        return { width: 160, height: 70 };
+        const { width, height } = sizeInfo as { width: number; height: number };
+        return { width, height };
       }
       case "square": {
-        return { width: 90, height: 90 };
+        const size = (sizeInfo as { size: number }).size;
+        return { width: size, height: size };
       }
       default:
         return { width: 120, height: 120 };
