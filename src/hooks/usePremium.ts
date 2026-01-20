@@ -117,18 +117,22 @@ export function usePremium() {
       if (error) throw error;
       
       if (data?.url) {
-        window.location.href = data.url;
+        // Use direct assignment to avoid popup blockers
+        // This replaces the current page with Stripe checkout
+        window.location.assign(data.url);
+      } else {
+        throw new Error("No checkout URL received");
       }
     } catch (error) {
       console.error("Payment error:", error);
+      setIsProcessingPayment(false);
       toast({
         title: "Något gick fel",
         description: "Kunde inte starta betalningen. Försök igen.",
         variant: "destructive",
       });
-    } finally {
-      setIsProcessingPayment(false);
     }
+    // Note: Don't reset isProcessingPayment on success since we're navigating away
   };
 
   const activatePremium = () => {
