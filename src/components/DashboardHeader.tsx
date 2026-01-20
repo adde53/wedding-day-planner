@@ -16,6 +16,7 @@ const tabs = [
   { id: "guests", label: "Gästlista" },
   { id: "checklist", label: "Checklista" },
   { id: "budget", label: "Budget" },
+  { id: "drinks", label: "Drycker" },
   { id: "settings", label: "Inställningar" },
 ];
 

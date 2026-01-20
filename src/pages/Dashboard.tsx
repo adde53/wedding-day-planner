@@ -9,7 +9,8 @@ import { WeddingChecklist } from "@/components/WeddingChecklist";
 import { BudgetTracker } from "@/components/BudgetTracker";
 import { GuestList } from "@/components/GuestList";
 import { SettingsPanel } from "@/components/SettingsPanel";
-import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users } from "lucide-react";
+import { DrinkCalculator } from "@/components/DrinkCalculator";
+import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine } from "lucide-react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -256,6 +257,26 @@ export default function Dashboard() {
                 </p>
               </div>
               <BudgetTracker />
+            </motion.div>
+          )}
+
+          {activeTab === "drinks" && (
+            <motion.div
+              key="drinks"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-8">
+                <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
+                  Dryckeskalkylator
+                </h2>
+                <p className="text-muted-foreground">
+                  Beräkna hur mycket dryck ni behöver baserat på antal gäster
+                </p>
+              </div>
+              <DrinkCalculator confirmedGuests={guestStats.confirmed} />
             </motion.div>
           )}
 

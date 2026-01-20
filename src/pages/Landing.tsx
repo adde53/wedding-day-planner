@@ -63,7 +63,7 @@ export default function Landing() {
               {user ? (
                 <Link to="/dashboard">
                   <Button className="bg-primary hover:bg-primary/90">
-                    Till Dashboard
+                    Vår bröllopsplanering
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>

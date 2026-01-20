@@ -11,7 +11,8 @@ import {
   ChevronDown,
   ChevronUp,
   Search,
-  Utensils
+  Utensils,
+  Download
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { exportGuestsToExcel } from "@/utils/exportGuests";
 
 interface Guest {
   id: string;
@@ -331,6 +333,15 @@ export function GuestList({ onGuestStatsChange }: GuestListProps) {
             <SelectItem value="declined">Avböjt</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => exportGuestsToExcel(guests)}
+          disabled={guests.length === 0}
+        >
+          <Download className="w-4 h-4" />
+          Exportera
+        </Button>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
           if (!open) resetForm();
