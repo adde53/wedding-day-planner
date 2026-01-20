@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Crown, Check, ArrowRight, Sparkles } from "lucide-react";
+import { Crown, Check, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +15,7 @@ interface PremiumGateProps {
   onUpgrade?: () => void;
   onStartTrial?: () => void;
   hasUsedTrial?: boolean;
+  isProcessingPayment?: boolean;
 }
 
 const premiumFeatures = [
@@ -31,7 +32,8 @@ export function PremiumGate({
   featureName, 
   onUpgrade,
   onStartTrial,
-  hasUsedTrial = false
+  hasUsedTrial = false,
+  isProcessingPayment = false
 }: PremiumGateProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -85,6 +87,7 @@ export function PremiumGate({
                 variant="outline"
                 className="w-full gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 onClick={onStartTrial}
+                disabled={isProcessingPayment}
               >
                 <Sparkles className="w-4 h-4" />
                 Starta 7 dagars gratis provperiod
@@ -94,15 +97,29 @@ export function PremiumGate({
               size="lg" 
               className="w-full gap-2"
               onClick={onUpgrade}
+              disabled={isProcessingPayment}
             >
-              <Crown className="w-4 h-4" />
-              Köp Premium – 199 kr
-              <ArrowRight className="w-4 h-4" />
+              {isProcessingPayment ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Laddar...
+                </>
+              ) : (
+                <>
+                  <Crown className="w-4 h-4" />
+                  Köp Premium – 199 kr
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Säker betalning via Stripe. Swish & kort accepteras.
+            </p>
             <Button 
               variant="ghost" 
               onClick={onClose}
               className="text-muted-foreground"
+              disabled={isProcessingPayment}
             >
               Kanske senare
             </Button>

@@ -21,7 +21,7 @@ import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const { profile, updateWeddingDate } = useProfile();
-  const { isPremium, activatePremium, startTrial, isTrialActive, trialDaysLeft, hasUsedTrial } = usePremium();
+  const { isPremium, activatePremium, startTrial, isTrialActive, trialDaysLeft, hasUsedTrial, isProcessingPayment } = usePremium();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [completedTasks, setCompletedTasks] = useState(0);
@@ -415,9 +415,9 @@ export default function Dashboard() {
         onClose={() => setPremiumGateOpen(false)}
         featureName={premiumFeatureName}
         hasUsedTrial={hasUsedTrial}
+        isProcessingPayment={isProcessingPayment}
         onUpgrade={() => {
           activatePremium();
-          setPremiumGateOpen(false);
         }}
         onStartTrial={() => {
           startTrial();
