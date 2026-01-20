@@ -61,7 +61,7 @@ export function DashboardHeader({ activeTab, onTabChange, guestCount, onPremiumC
                 <Heart className="w-5 h-5 text-primary-foreground" />
               </div>
               <h1 className="font-serif text-xl font-medium text-foreground">
-                mittBröllop.se
+                MittBröllop.se
               </h1>
             </Link>
           </motion.div>
