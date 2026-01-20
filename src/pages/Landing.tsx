@@ -81,7 +81,7 @@ export default function Landing() {
                 <Heart className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-serif text-xl font-medium text-foreground">
-                mittBröllop.se
+                MittBröllop.se
               </span>
             </Link>
             <div className="flex items-center gap-4">
@@ -371,11 +371,11 @@ export default function Landing() {
                 <Heart className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-serif text-lg font-medium text-foreground">
-                mittBröllop.se
+                MittBröllop.se
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 mittBröllop.se. Bröllopsplanering gjord enkel.
+              © 2025 MittBröllop.se. Bröllopsplanering gjord enkel.
             </p>
           </div>
         </div>

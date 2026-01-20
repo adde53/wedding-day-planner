@@ -69,7 +69,7 @@ export default function Auth() {
         if (error) throw error;
         toast({
           title: "Konto skapat!",
-          description: "Välkommen till mittBröllop.se.",
+          description: "Välkommen till MittBröllop.se.",
         });
         navigate("/dashboard");
       }
@@ -113,7 +113,7 @@ export default function Auth() {
               <Heart className="w-6 h-6 text-primary-foreground" />
             </div>
             <h1 className="font-serif text-2xl font-medium text-foreground">
-              mittBröllop.se
+              MittBröllop.se
             </h1>
           </div>
 
