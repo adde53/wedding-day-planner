@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Heart, Mail, Lock, User, ArrowRight, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Heart, Mail, Lock, User, ArrowRight, Sparkles, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -25,12 +26,37 @@ export default function Auth() {
     }
   }, [user, authLoading, navigate]);
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      if (error) throw error;
+      toast({
+        title: "E-post skickad!",
+        description: "Kolla din inkorg för att återställa lösenordet.",
+      });
+      setMode("login");
+    } catch (error: any) {
+      toast({
+        title: "Något gick fel",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (isLogin) {
+      if (mode === "login") {
         const { error } = await signIn(email, password);
         if (error) throw error;
         toast({
@@ -38,12 +64,12 @@ export default function Auth() {
           description: "Du är nu inloggad.",
         });
         navigate("/dashboard");
-      } else {
+      } else if (mode === "signup") {
         const { error } = await signUp(email, password, fullName);
         if (error) throw error;
         toast({
           title: "Konto skapat!",
-          description: "Välkommen till Wedding Planner Pro.",
+          description: "Välkommen till Bröllopsplanerare.",
         });
         navigate("/dashboard");
       }
@@ -57,6 +83,19 @@ export default function Auth() {
       setIsLoading(false);
     }
   };
+
+  const getHeading = () => {
+    switch (mode) {
+      case "login":
+        return { title: "Välkommen tillbaka", subtitle: "Logga in för att fortsätta planera" };
+      case "signup":
+        return { title: "Skapa ditt konto", subtitle: "Börja planera ert drömbröllop idag" };
+      case "forgot":
+        return { title: "Glömt lösenord?", subtitle: "Ange din e-post så skickar vi en återställningslänk" };
+    }
+  };
+
+  const heading = getHeading();
 
   return (
     <div className="min-h-screen bg-subtle flex">
@@ -73,121 +112,169 @@ export default function Auth() {
             <div className="w-12 h-12 rounded-xl bg-sage-gradient flex items-center justify-center shadow-md">
               <Heart className="w-6 h-6 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="font-serif text-2xl font-medium text-foreground">
-                Wedding Planner
-              </h1>
-              <p className="text-sm text-muted-foreground">Pro</p>
-            </div>
+            <h1 className="font-serif text-2xl font-medium text-foreground">
+              Bröllopsplanerare
+            </h1>
           </div>
 
           {/* Heading */}
           <div className="mb-8">
             <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
-              {isLogin ? "Välkommen tillbaka" : "Skapa ditt konto"}
+              {heading.title}
             </h2>
             <p className="text-muted-foreground">
-              {isLogin
-                ? "Logga in för att fortsätta planera"
-                : "Börja planera ert drömbröllop idag"}
+              {heading.subtitle}
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {!isLogin && (
+          {/* Forgot Password Form */}
+          {mode === "forgot" ? (
+            <form onSubmit={handleForgotPassword} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-foreground font-medium">
-                  Ditt namn
+                <Label htmlFor="email" className="text-foreground font-medium">
+                  E-postadress
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="Anna Andersson"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="din@email.se"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-11 h-12 bg-card border-border focus:border-primary"
-                    required={!isLogin}
+                    required
                   />
                 </div>
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground font-medium">
-                E-postadress
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="din@email.se"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-11 h-12 bg-card border-border focus:border-primary"
-                  required
-                />
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-md"
+              >
+                {isLoading ? "Skickar..." : "Skicka återställningslänk"}
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setMode("login")}
+                className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Tillbaka till inloggning
+              </button>
+            </form>
+          ) : (
+            <>
+              {/* Login/Signup Form */}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {mode === "signup" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-foreground font-medium">
+                      Ditt namn
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="fullName"
+                        type="text"
+                        placeholder="Anna Andersson"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="pl-11 h-12 bg-card border-border focus:border-primary"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-foreground font-medium">
+                    E-postadress
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="din@email.se"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-11 h-12 bg-card border-border focus:border-primary"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-foreground font-medium">
+                      Lösenord
+                    </Label>
+                    {mode === "login" && (
+                      <button
+                        type="button"
+                        onClick={() => setMode("forgot")}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Glömt lösenord?
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-11 h-12 bg-card border-border focus:border-primary"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-md"
+                >
+                  {isLoading ? (
+                    "Vänta..."
+                  ) : (
+                    <>
+                      {mode === "login" ? "Logga in" : "Skapa konto"}
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              {/* Toggle */}
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => setMode(mode === "login" ? "signup" : "login")}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {mode === "login" ? (
+                    <>
+                      Har du inget konto?{" "}
+                      <span className="text-primary font-medium">Skapa ett här</span>
+                    </>
+                  ) : (
+                    <>
+                      Har du redan ett konto?{" "}
+                      <span className="text-primary font-medium">Logga in</span>
+                    </>
+                  )}
+                </button>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground font-medium">
-                Lösenord
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-11 h-12 bg-card border-border focus:border-primary"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-md"
-            >
-              {isLoading ? (
-                "Vänta..."
-              ) : (
-                <>
-                  {isLogin ? "Logga in" : "Skapa konto"}
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </>
-              )}
-            </Button>
-          </form>
-
-          {/* Toggle */}
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {isLogin ? (
-                <>
-                  Har du inget konto?{" "}
-                  <span className="text-primary font-medium">Skapa ett här</span>
-                </>
-              ) : (
-                <>
-                  Har du redan ett konto?{" "}
-                  <span className="text-primary font-medium">Logga in</span>
-                </>
-              )}
-            </button>
-          </div>
+            </>
+          )}
 
           {/* Free features note */}
           <div className="mt-8 p-4 rounded-xl bg-sage-light border border-sage/20">
