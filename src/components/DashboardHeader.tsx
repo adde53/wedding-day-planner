@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Heart, Menu, X, LogOut, Shield } from "lucide-react";
+import { Heart, Menu, X, LogOut, Shield, Users } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -8,15 +8,17 @@ import { useAuth } from "@/contexts/AuthContext";
 interface DashboardHeaderProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  guestCount?: { confirmed: number; total: number };
 }
 
 const tabs = [
   { id: "overview", label: "Översikt" },
+  { id: "guests", label: "Gästlista" },
   { id: "checklist", label: "Checklista" },
   { id: "budget", label: "Budget" },
 ];
 
-export function DashboardHeader({ activeTab, onTabChange }: DashboardHeaderProps) {
+export function DashboardHeader({ activeTab, onTabChange, guestCount }: DashboardHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
