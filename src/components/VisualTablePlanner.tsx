@@ -11,7 +11,6 @@ import {
   RotateCcw,
   Table2,
   UserMinus,
-  Move
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,14 +42,20 @@ interface Guest {
   rsvp_status: string;
 }
 
+interface ChairData {
+  guestId: string | null;
+  angle: number; // Angle around the table (for round) or position index
+}
+
 interface TableData {
   id: string;
   name: string;
   capacity: number;
   guests: string[];
+  chairs: ChairData[];
   x: number;
   y: number;
-  shape: "round" | "rectangle" | "square";
+  shape: "round" | "rectangle" | "square" | "head" | "u-shape";
 }
 
 interface VisualTablePlannerProps {
@@ -58,10 +63,40 @@ interface VisualTablePlannerProps {
 }
 
 const TABLE_SHAPES = [
-  { id: "round", label: "Runt", icon: "⭕" },
+  { id: "round", label: "Runt bord", icon: "⭕" },
   { id: "rectangle", label: "Rektangulärt", icon: "▭" },
   { id: "square", label: "Kvadratiskt", icon: "◻" },
+  { id: "head", label: "Honörsbord", icon: "👑" },
+  { id: "u-shape", label: "U-format bord", icon: "⊔" },
 ];
+
+// Generate initial chair positions based on table shape and capacity
+const generateChairPositions = (shape: TableData["shape"], capacity: number): ChairData[] => {
+  const chairs: ChairData[] = [];
+  
+  for (let i = 0; i < capacity; i++) {
+    if (shape === "round") {
+      // Distribute chairs evenly around the circle
+      chairs.push({ guestId: null, angle: (360 / capacity) * i - 90 });
+    } else if (shape === "head" || shape === "rectangle") {
+      // For head table, all chairs on one side
+      if (shape === "head") {
+        chairs.push({ guestId: null, angle: i }); // Position index for linear layout
+      } else {
+        // Rectangle: distribute on long sides
+        chairs.push({ guestId: null, angle: i });
+      }
+    } else if (shape === "u-shape") {
+      // U-shape: chairs on outside of U
+      chairs.push({ guestId: null, angle: i });
+    } else {
+      // Square: distribute on all sides
+      chairs.push({ guestId: null, angle: i });
+    }
+  }
+  
+  return chairs;
+};
 
 export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps) {
   const { user } = useAuth();
@@ -71,9 +106,11 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<TableData | null>(null);
-  const [formData, setFormData] = useState({ name: "", capacity: 8, shape: "round" as "round" | "rectangle" | "square" });
+  const [formData, setFormData] = useState({ name: "", capacity: 8, shape: "round" as TableData["shape"] });
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
+  const [selectedChair, setSelectedChair] = useState<{ tableId: string; chairIndex: number } | null>(null);
   const [draggedTable, setDraggedTable] = useState<string | null>(null);
+  const [draggedChair, setDraggedChair] = useState<{ tableId: string; chairIndex: number } | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
@@ -104,15 +141,21 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
 
   const loadTablesFromStorage = () => {
     if (!user) return;
-    const stored = localStorage.getItem(`visual_tables_${user.id}`);
+    const stored = localStorage.getItem(`visual_tables_v2_${user.id}`);
     if (stored) {
-      setTables(JSON.parse(stored));
+      const parsed = JSON.parse(stored);
+      // Migrate old format if needed
+      const migrated = parsed.map((t: TableData) => ({
+        ...t,
+        chairs: t.chairs || generateChairPositions(t.shape, t.capacity),
+      }));
+      setTables(migrated);
     }
   };
 
   const saveTablestoStorage = (newTables: TableData[]) => {
     if (!user) return;
-    localStorage.setItem(`visual_tables_${user.id}`, JSON.stringify(newTables));
+    localStorage.setItem(`visual_tables_v2_${user.id}`, JSON.stringify(newTables));
     setTables(newTables);
   };
 
@@ -123,21 +166,39 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     }
 
     if (editingTable) {
-      const updated = tables.map(t => 
-        t.id === editingTable.id 
-          ? { ...t, name: formData.name, capacity: formData.capacity, shape: formData.shape }
-          : t
-      );
+      const updated = tables.map(t => {
+        if (t.id === editingTable.id) {
+          const newChairs = generateChairPositions(formData.shape, formData.capacity);
+          // Preserve existing guest assignments if capacity allows
+          const oldGuests = t.chairs.filter(c => c.guestId).map(c => c.guestId);
+          oldGuests.forEach((guestId, i) => {
+            if (i < newChairs.length && guestId) {
+              newChairs[i].guestId = guestId;
+            }
+          });
+          return { 
+            ...t, 
+            name: formData.name, 
+            capacity: formData.capacity, 
+            shape: formData.shape,
+            chairs: newChairs,
+            guests: newChairs.filter(c => c.guestId).map(c => c.guestId as string),
+          };
+        }
+        return t;
+      });
       saveTablestoStorage(updated);
       toast.success("Bordet har uppdaterats");
     } else {
+      const chairs = generateChairPositions(formData.shape, formData.capacity);
       const newTable: TableData = {
         id: crypto.randomUUID(),
         name: formData.name,
         capacity: formData.capacity,
         guests: [],
-        x: 100 + Math.random() * 200,
-        y: 100 + Math.random() * 200,
+        chairs,
+        x: 150 + Math.random() * 200,
+        y: 150 + Math.random() * 200,
         shape: formData.shape,
       };
       saveTablestoStorage([...tables, newTable]);
@@ -153,6 +214,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     const updated = tables.filter(t => t.id !== tableId);
     saveTablestoStorage(updated);
     setSelectedTable(null);
+    setSelectedChair(null);
     toast.success("Bordet har tagits bort");
   };
 
@@ -162,33 +224,62 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     setIsDialogOpen(true);
   };
 
-  const addGuestToTable = (tableId: string, guestId: string) => {
+  const addGuestToChair = (tableId: string, chairIndex: number, guestId: string) => {
     const updated = tables.map(t => {
       if (t.id === tableId) {
-        if (t.guests.length >= t.capacity) {
-          toast.error("Bordet är fullt");
-          return t;
-        }
-        if (!t.guests.includes(guestId)) {
-          return { ...t, guests: [...t.guests, guestId] };
-        }
+        const newChairs = [...t.chairs];
+        // Remove guest from any other chair first
+        newChairs.forEach((chair, i) => {
+          if (chair.guestId === guestId) {
+            newChairs[i] = { ...chair, guestId: null };
+          }
+        });
+        newChairs[chairIndex] = { ...newChairs[chairIndex], guestId };
+        const newGuests = newChairs.filter(c => c.guestId).map(c => c.guestId as string);
+        return { ...t, chairs: newChairs, guests: newGuests };
+      } else {
+        // Remove from other tables too
+        const newChairs = t.chairs.map(chair => 
+          chair.guestId === guestId ? { ...chair, guestId: null } : chair
+        );
+        const newGuests = newChairs.filter(c => c.guestId).map(c => c.guestId as string);
+        return { ...t, chairs: newChairs, guests: newGuests };
+      }
+    });
+    saveTablestoStorage(updated);
+  };
+
+  const removeGuestFromChair = (tableId: string, chairIndex: number) => {
+    const updated = tables.map(t => {
+      if (t.id === tableId) {
+        const newChairs = [...t.chairs];
+        newChairs[chairIndex] = { ...newChairs[chairIndex], guestId: null };
+        const newGuests = newChairs.filter(c => c.guestId).map(c => c.guestId as string);
+        return { ...t, chairs: newChairs, guests: newGuests };
+      }
+      return t;
+    });
+    saveTablestoStorage(updated);
+    setSelectedChair(null);
+  };
+
+  const swapChairs = (tableId: string, fromIndex: number, toIndex: number) => {
+    const updated = tables.map(t => {
+      if (t.id === tableId) {
+        const newChairs = [...t.chairs];
+        const temp = newChairs[fromIndex].guestId;
+        newChairs[fromIndex] = { ...newChairs[fromIndex], guestId: newChairs[toIndex].guestId };
+        newChairs[toIndex] = { ...newChairs[toIndex], guestId: temp };
+        const newGuests = newChairs.filter(c => c.guestId).map(c => c.guestId as string);
+        return { ...t, chairs: newChairs, guests: newGuests };
       }
       return t;
     });
     saveTablestoStorage(updated);
   };
 
-  const removeGuestFromTable = (tableId: string, guestId: string) => {
-    const updated = tables.map(t => {
-      if (t.id === tableId) {
-        return { ...t, guests: t.guests.filter(g => g !== guestId) };
-      }
-      return t;
-    });
-    saveTablestoStorage(updated);
-  };
-
-  const handleMouseDown = (e: React.MouseEvent, tableId: string) => {
+  const handleTableMouseDown = (e: React.MouseEvent, tableId: string) => {
+    e.stopPropagation();
     if (!canvasRef.current) return;
     const table = tables.find(t => t.id === tableId);
     if (!table) return;
@@ -200,6 +291,26 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     });
     setDraggedTable(tableId);
     setSelectedTable(tableId);
+    setSelectedChair(null);
+  };
+
+  const handleChairClick = (e: React.MouseEvent, tableId: string, chairIndex: number) => {
+    e.stopPropagation();
+    
+    if (draggedChair && draggedChair.tableId === tableId) {
+      // Swap chairs
+      swapChairs(tableId, draggedChair.chairIndex, chairIndex);
+      setDraggedChair(null);
+    } else {
+      setSelectedTable(tableId);
+      setSelectedChair({ tableId, chairIndex });
+    }
+  };
+
+  const handleChairDragStart = (e: React.MouseEvent, tableId: string, chairIndex: number) => {
+    e.stopPropagation();
+    setDraggedChair({ tableId, chairIndex });
+    setSelectedChair({ tableId, chairIndex });
   };
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -210,7 +321,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     const y = (e.clientY - rect.top) / zoom - dragOffset.y;
 
     const updated = tables.map(t => 
-      t.id === draggedTable ? { ...t, x: Math.max(0, x), y: Math.max(0, y) } : t
+      t.id === draggedTable ? { ...t, x: Math.max(50, x), y: Math.max(50, y) } : t
     );
     setTables(updated);
   }, [draggedTable, dragOffset, zoom, tables]);
@@ -227,8 +338,8 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
 
     setIsExporting(true);
     setSelectedTable(null);
+    setSelectedChair(null);
 
-    // Wait for state update
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
@@ -257,8 +368,8 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   const resetPositions = () => {
     const updated = tables.map((t, i) => ({
       ...t,
-      x: 100 + (i % 4) * 200,
-      y: 100 + Math.floor(i / 4) * 200,
+      x: 150 + (i % 3) * 280,
+      y: 150 + Math.floor(i / 3) * 280,
     }));
     saveTablestoStorage(updated);
     toast.success("Positioner återställda");
@@ -273,29 +384,399 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   const totalSeats = tables.reduce((sum, t) => sum + t.capacity, 0);
   const totalAssigned = tables.reduce((sum, t) => sum + t.guests.length, 0);
 
-  const getTableStyle = (table: TableData) => {
-    const baseSize = table.capacity <= 6 ? 120 : table.capacity <= 10 ? 150 : 180;
+  // Render chairs based on table shape
+  const renderChairs = (table: TableData) => {
+    const { shape, chairs, capacity } = table;
     
-    switch (table.shape) {
-      case "round":
-        return {
-          width: baseSize,
-          height: baseSize,
-          borderRadius: "50%",
-        };
-      case "rectangle":
-        return {
-          width: baseSize * 1.5,
-          height: baseSize * 0.8,
-          borderRadius: "12px",
-        };
-      case "square":
-        return {
-          width: baseSize,
-          height: baseSize,
-          borderRadius: "12px",
-        };
+    if (shape === "round") {
+      return renderRoundTableChairs(table, chairs);
+    } else if (shape === "head") {
+      return renderHeadTableChairs(table, chairs);
+    } else if (shape === "u-shape") {
+      return renderUShapeChairs(table, chairs);
+    } else if (shape === "rectangle") {
+      return renderRectangleChairs(table, chairs);
+    } else {
+      return renderSquareChairs(table, chairs);
     }
+  };
+
+  const renderRoundTableChairs = (table: TableData, chairs: ChairData[]) => {
+    const tableRadius = table.capacity <= 6 ? 50 : table.capacity <= 10 ? 65 : 80;
+    const chairRadius = 22;
+    const orbitRadius = tableRadius + chairRadius + 8;
+
+    return chairs.map((chair, index) => {
+      const angle = (chair.angle * Math.PI) / 180;
+      const x = Math.cos(angle) * orbitRadius;
+      const y = Math.sin(angle) * orbitRadius;
+      const guest = chair.guestId ? getGuestById(chair.guestId) : null;
+      const isSelected = selectedChair?.tableId === table.id && selectedChair?.chairIndex === index;
+      const isDragging = draggedChair?.tableId === table.id && draggedChair?.chairIndex === index;
+
+      return (
+        <div
+          key={index}
+          className={`absolute flex flex-col items-center justify-center transition-all cursor-pointer
+            ${isSelected ? "z-20" : "z-10"}
+            ${isDragging ? "opacity-50" : ""}
+          `}
+          style={{
+            left: `calc(50% + ${x}px - ${chairRadius}px)`,
+            top: `calc(50% + ${y}px - ${chairRadius}px)`,
+            width: chairRadius * 2,
+            height: chairRadius * 2,
+          }}
+          onClick={(e) => handleChairClick(e, table.id, index)}
+          onMouseDown={(e) => handleChairDragStart(e, table.id, index)}
+        >
+          {/* Chair visual */}
+          <div 
+            className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-medium shadow-sm
+              ${guest 
+                ? "bg-primary/20 border-primary text-primary" 
+                : "bg-muted border-border text-muted-foreground"
+              }
+              ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""}
+              hover:scale-110 transition-transform
+            `}
+          >
+            {guest ? guest.name.charAt(0).toUpperCase() : index + 1}
+          </div>
+          {/* Guest name label */}
+          {guest && (
+            <span className="absolute -bottom-4 text-[9px] font-medium text-foreground bg-background/90 px-1 rounded whitespace-nowrap max-w-[60px] truncate">
+              {guest.name.split(" ")[0]}
+            </span>
+          )}
+        </div>
+      );
+    });
+  };
+
+  const renderHeadTableChairs = (table: TableData, chairs: ChairData[]) => {
+    const tableWidth = Math.max(200, table.capacity * 45);
+    const chairSize = 36;
+    const spacing = tableWidth / (chairs.length + 1);
+
+    return chairs.map((chair, index) => {
+      const guest = chair.guestId ? getGuestById(chair.guestId) : null;
+      const isSelected = selectedChair?.tableId === table.id && selectedChair?.chairIndex === index;
+      const isDragging = draggedChair?.tableId === table.id && draggedChair?.chairIndex === index;
+
+      return (
+        <div
+          key={index}
+          className={`absolute flex flex-col items-center transition-all cursor-pointer
+            ${isSelected ? "z-20" : "z-10"}
+            ${isDragging ? "opacity-50" : ""}
+          `}
+          style={{
+            left: `${spacing * (index + 1) - chairSize / 2}px`,
+            top: `-${chairSize + 10}px`,
+            width: chairSize,
+          }}
+          onClick={(e) => handleChairClick(e, table.id, index)}
+          onMouseDown={(e) => handleChairDragStart(e, table.id, index)}
+        >
+          <div 
+            className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-medium shadow-sm
+              ${guest 
+                ? "bg-primary/20 border-primary text-primary" 
+                : "bg-muted border-border text-muted-foreground"
+              }
+              ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""}
+              hover:scale-110 transition-transform
+            `}
+          >
+            {guest ? guest.name.charAt(0).toUpperCase() : index + 1}
+          </div>
+          {guest && (
+            <span className="absolute top-10 text-[9px] font-medium text-foreground bg-background/90 px-1 rounded whitespace-nowrap max-w-[60px] truncate">
+              {guest.name.split(" ")[0]}
+            </span>
+          )}
+        </div>
+      );
+    });
+  };
+
+  const renderUShapeChairs = (table: TableData, chairs: ChairData[]) => {
+    const armLength = 100;
+    const baseWidth = Math.max(180, (table.capacity - 4) * 40);
+    const chairSize = 36;
+    
+    // Distribute chairs: 2 on each arm, rest on the base
+    const leftArmCount = Math.min(2, Math.floor(chairs.length / 4));
+    const rightArmCount = Math.min(2, Math.floor(chairs.length / 4));
+    const baseCount = chairs.length - leftArmCount - rightArmCount;
+
+    return chairs.map((chair, index) => {
+      const guest = chair.guestId ? getGuestById(chair.guestId) : null;
+      const isSelected = selectedChair?.tableId === table.id && selectedChair?.chairIndex === index;
+      const isDragging = draggedChair?.tableId === table.id && draggedChair?.chairIndex === index;
+
+      let x = 0, y = 0;
+      
+      if (index < leftArmCount) {
+        // Left arm (outside)
+        x = -chairSize - 10;
+        y = 20 + index * 50;
+      } else if (index < leftArmCount + rightArmCount) {
+        // Right arm (outside)
+        x = baseWidth + 10;
+        y = 20 + (index - leftArmCount) * 50;
+      } else {
+        // Base (bottom, outside)
+        const baseIndex = index - leftArmCount - rightArmCount;
+        const spacing = baseWidth / (baseCount + 1);
+        x = spacing * (baseIndex + 1) - chairSize / 2;
+        y = armLength + 10;
+      }
+
+      return (
+        <div
+          key={index}
+          className={`absolute flex flex-col items-center transition-all cursor-pointer
+            ${isSelected ? "z-20" : "z-10"}
+            ${isDragging ? "opacity-50" : ""}
+          `}
+          style={{
+            left: `${x}px`,
+            top: `${y}px`,
+            width: chairSize,
+          }}
+          onClick={(e) => handleChairClick(e, table.id, index)}
+          onMouseDown={(e) => handleChairDragStart(e, table.id, index)}
+        >
+          <div 
+            className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-medium shadow-sm
+              ${guest 
+                ? "bg-primary/20 border-primary text-primary" 
+                : "bg-muted border-border text-muted-foreground"
+              }
+              ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""}
+              hover:scale-110 transition-transform
+            `}
+          >
+            {guest ? guest.name.charAt(0).toUpperCase() : index + 1}
+          </div>
+          {guest && (
+            <span className="absolute top-10 text-[9px] font-medium text-foreground bg-background/90 px-1 rounded whitespace-nowrap max-w-[60px] truncate">
+              {guest.name.split(" ")[0]}
+            </span>
+          )}
+        </div>
+      );
+    });
+  };
+
+  const renderRectangleChairs = (table: TableData, chairs: ChairData[]) => {
+    const tableWidth = 180;
+    const tableHeight = 80;
+    const chairSize = 36;
+    const halfChairs = Math.ceil(chairs.length / 2);
+
+    return chairs.map((chair, index) => {
+      const guest = chair.guestId ? getGuestById(chair.guestId) : null;
+      const isSelected = selectedChair?.tableId === table.id && selectedChair?.chairIndex === index;
+      const isDragging = draggedChair?.tableId === table.id && draggedChair?.chairIndex === index;
+
+      const isTop = index < halfChairs;
+      const posIndex = isTop ? index : index - halfChairs;
+      const spacing = tableWidth / (halfChairs + 1);
+
+      return (
+        <div
+          key={index}
+          className={`absolute flex flex-col items-center transition-all cursor-pointer
+            ${isSelected ? "z-20" : "z-10"}
+            ${isDragging ? "opacity-50" : ""}
+          `}
+          style={{
+            left: `${spacing * (posIndex + 1) - chairSize / 2}px`,
+            top: isTop ? `-${chairSize + 8}px` : `${tableHeight + 8}px`,
+            width: chairSize,
+          }}
+          onClick={(e) => handleChairClick(e, table.id, index)}
+          onMouseDown={(e) => handleChairDragStart(e, table.id, index)}
+        >
+          <div 
+            className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-medium shadow-sm
+              ${guest 
+                ? "bg-primary/20 border-primary text-primary" 
+                : "bg-muted border-border text-muted-foreground"
+              }
+              ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""}
+              hover:scale-110 transition-transform
+            `}
+          >
+            {guest ? guest.name.charAt(0).toUpperCase() : index + 1}
+          </div>
+          {guest && (
+            <span className={`absolute ${isTop ? "top-10" : "-top-4"} text-[9px] font-medium text-foreground bg-background/90 px-1 rounded whitespace-nowrap max-w-[60px] truncate`}>
+              {guest.name.split(" ")[0]}
+            </span>
+          )}
+        </div>
+      );
+    });
+  };
+
+  const renderSquareChairs = (table: TableData, chairs: ChairData[]) => {
+    const tableSize = 100;
+    const chairSize = 36;
+    const sidesCount = Math.ceil(chairs.length / 4);
+
+    return chairs.map((chair, index) => {
+      const guest = chair.guestId ? getGuestById(chair.guestId) : null;
+      const isSelected = selectedChair?.tableId === table.id && selectedChair?.chairIndex === index;
+      const isDragging = draggedChair?.tableId === table.id && draggedChair?.chairIndex === index;
+
+      const side = Math.floor(index / sidesCount);
+      const posInSide = index % sidesCount;
+      const spacing = tableSize / (sidesCount + 1);
+
+      let x = 0, y = 0;
+      switch (side) {
+        case 0: // Top
+          x = spacing * (posInSide + 1) - chairSize / 2;
+          y = -chairSize - 8;
+          break;
+        case 1: // Right
+          x = tableSize + 8;
+          y = spacing * (posInSide + 1) - chairSize / 2;
+          break;
+        case 2: // Bottom
+          x = spacing * (posInSide + 1) - chairSize / 2;
+          y = tableSize + 8;
+          break;
+        case 3: // Left
+          x = -chairSize - 8;
+          y = spacing * (posInSide + 1) - chairSize / 2;
+          break;
+      }
+
+      return (
+        <div
+          key={index}
+          className={`absolute flex items-center justify-center transition-all cursor-pointer
+            ${isSelected ? "z-20" : "z-10"}
+            ${isDragging ? "opacity-50" : ""}
+          `}
+          style={{
+            left: `${x}px`,
+            top: `${y}px`,
+            width: chairSize,
+            height: chairSize,
+          }}
+          onClick={(e) => handleChairClick(e, table.id, index)}
+          onMouseDown={(e) => handleChairDragStart(e, table.id, index)}
+        >
+          <div 
+            className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-[10px] font-medium shadow-sm
+              ${guest 
+                ? "bg-primary/20 border-primary text-primary" 
+                : "bg-muted border-border text-muted-foreground"
+              }
+              ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""}
+              hover:scale-110 transition-transform
+            `}
+          >
+            {guest ? guest.name.charAt(0).toUpperCase() : index + 1}
+          </div>
+        </div>
+      );
+    });
+  };
+
+  const getTableDimensions = (table: TableData) => {
+    const { shape, capacity } = table;
+    
+    switch (shape) {
+      case "round": {
+        const size = capacity <= 6 ? 100 : capacity <= 10 ? 130 : 160;
+        return { width: size, height: size, borderRadius: "50%" };
+      }
+      case "head": {
+        const width = Math.max(200, capacity * 45);
+        return { width, height: 50, borderRadius: "8px" };
+      }
+      case "u-shape": {
+        const baseWidth = Math.max(180, (capacity - 4) * 40);
+        return { width: baseWidth, height: 120, borderRadius: "0" };
+      }
+      case "rectangle": {
+        return { width: 180, height: 80, borderRadius: "12px" };
+      }
+      case "square": {
+        return { width: 100, height: 100, borderRadius: "12px" };
+      }
+      default:
+        return { width: 120, height: 120, borderRadius: "50%" };
+    }
+  };
+
+  const renderTableShape = (table: TableData) => {
+    const dims = getTableDimensions(table);
+    const isSelected = selectedTable === table.id;
+
+    if (table.shape === "u-shape") {
+      const armWidth = 40;
+      const baseHeight = 40;
+      const armHeight = dims.height - baseHeight;
+      
+      return (
+        <div className="relative" style={{ width: dims.width, height: dims.height }}>
+          {/* Left arm */}
+          <div 
+            className={`absolute left-0 top-0 bg-card border-2 ${isSelected ? "border-primary" : "border-border"}`}
+            style={{ width: armWidth, height: armHeight + baseHeight, borderRadius: "8px 0 0 8px" }}
+          />
+          {/* Right arm */}
+          <div 
+            className={`absolute right-0 top-0 bg-card border-2 ${isSelected ? "border-primary" : "border-border"}`}
+            style={{ width: armWidth, height: armHeight + baseHeight, borderRadius: "0 8px 8px 0" }}
+          />
+          {/* Base connecting the arms */}
+          <div 
+            className={`absolute bottom-0 bg-card border-2 ${isSelected ? "border-primary" : "border-border"}`}
+            style={{ 
+              left: armWidth - 2, 
+              width: dims.width - (armWidth * 2) + 4, 
+              height: baseHeight,
+              borderRadius: "0 0 8px 8px",
+              borderTop: "none",
+            }}
+          />
+          {/* Center label */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="font-serif font-medium text-foreground text-sm">{table.name}</span>
+            <span className="text-xs text-muted-foreground">{table.guests.length}/{table.capacity}</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={`bg-card border-2 flex flex-col items-center justify-center
+          ${isSelected ? "border-primary shadow-lg" : "border-border"}
+        `}
+        style={{
+          width: dims.width,
+          height: dims.height,
+          borderRadius: dims.borderRadius,
+        }}
+      >
+        <span className="font-serif font-medium text-foreground text-sm text-center px-2">
+          {table.name}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {table.guests.length}/{table.capacity}
+        </span>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -393,7 +874,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                   <Input
                     id="capacity"
                     type="number"
-                    min={1}
+                    min={2}
                     max={20}
                     value={formData.capacity}
                     onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 8 })}
@@ -403,7 +884,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                   <Label>Bordsform</Label>
                   <Select 
                     value={formData.shape} 
-                    onValueChange={(v: "round" | "rectangle" | "square") => setFormData({ ...formData, shape: v })}
+                    onValueChange={(v: TableData["shape"]) => setFormData({ ...formData, shape: v })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -466,7 +947,12 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                 unassignedGuests.map((guest) => (
                   <div
                     key={guest.id}
-                    className="flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                    className="flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => {
+                      if (selectedChair) {
+                        addGuestToChair(selectedChair.tableId, selectedChair.chairIndex, guest.id);
+                      }
+                    }}
                   >
                     <div>
                       <span className="text-sm font-medium text-foreground">{guest.name}</span>
@@ -476,10 +962,18 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                         </span>
                       )}
                     </div>
+                    {selectedChair && (
+                      <span className="text-xs text-primary">Klicka för att placera</span>
+                    )}
                   </div>
                 ))
               )}
             </div>
+            {selectedChair && (
+              <p className="text-xs text-muted-foreground mt-4 text-center">
+                Välj en gäst för att placera på stol {selectedChair.chairIndex + 1}
+              </p>
+            )}
           </div>
         </div>
 
@@ -487,10 +981,10 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
         <div className="lg:col-span-3 order-1 lg:order-2">
           <div 
             className="bg-card rounded-xl border border-border overflow-hidden"
-            style={{ minHeight: "500px" }}
+            style={{ minHeight: "600px" }}
           >
             {tables.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[500px] text-center p-8">
+              <div className="flex flex-col items-center justify-center h-[600px] text-center p-8">
                 <Table2 className="w-16 h-16 text-muted-foreground mb-4" />
                 <h3 className="font-serif text-xl font-medium text-foreground mb-2">
                   Skapa ert första bord
@@ -504,19 +998,28 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                 ref={canvasRef}
                 className="relative bg-gradient-to-br from-sage-light/30 to-gold-light/20 cursor-move"
                 style={{ 
-                  minHeight: "500px",
+                  minHeight: "600px",
                   transform: `scale(${zoom})`,
                   transformOrigin: "top left",
                   width: `${100 / zoom}%`,
-                  height: `${500 / zoom}px`,
+                  height: `${600 / zoom}px`,
                 }}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
+                onMouseLeave={() => {
+                  handleMouseUp();
+                  setDraggedChair(null);
+                }}
+                onClick={() => {
+                  if (!draggedTable) {
+                    setSelectedTable(null);
+                    setSelectedChair(null);
+                  }
+                }}
               >
                 {/* Grid pattern */}
                 <div 
-                  className="absolute inset-0 opacity-10"
+                  className="absolute inset-0 opacity-10 pointer-events-none"
                   style={{
                     backgroundImage: "radial-gradient(circle, #666 1px, transparent 1px)",
                     backgroundSize: "30px 30px",
@@ -524,60 +1027,40 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                 />
 
                 {tables.map((table) => {
-                  const style = getTableStyle(table);
-                  const isSelected = selectedTable === table.id;
+                  const dims = getTableDimensions(table);
+                  const padding = 60; // Space for chairs
 
                   return (
                     <div
                       key={table.id}
-                      className={`absolute cursor-grab active:cursor-grabbing transition-shadow ${
-                        isSelected ? "ring-2 ring-primary ring-offset-2" : ""
-                      } ${!isExporting ? "hover:shadow-lg" : ""}`}
+                      className={`absolute cursor-grab active:cursor-grabbing transition-shadow
+                        ${!isExporting ? "hover:shadow-lg" : ""}
+                      `}
                       style={{
-                        left: table.x,
-                        top: table.y,
-                        ...style,
-                        backgroundColor: isSelected ? "hsl(var(--primary) / 0.15)" : "hsl(var(--card))",
-                        border: "2px solid hsl(var(--border))",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "8px",
+                        left: table.x - padding,
+                        top: table.y - padding,
+                        width: dims.width + padding * 2,
+                        height: dims.height + padding * 2,
+                        paddingLeft: padding,
+                        paddingTop: padding,
                       }}
-                      onMouseDown={(e) => handleMouseDown(e, table.id)}
-                      onClick={() => setSelectedTable(table.id)}
+                      onMouseDown={(e) => handleTableMouseDown(e, table.id)}
                     >
-                      <span className="font-serif font-medium text-foreground text-sm text-center">
-                        {table.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {table.guests.length}/{table.capacity}
-                      </span>
-
-                      {/* Guest names around table */}
-                      {table.guests.length > 0 && (
-                        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                          <div className="flex flex-wrap justify-center gap-1 max-w-[200px]">
-                            {table.guests.slice(0, 3).map((guestId) => {
-                              const guest = getGuestById(guestId);
-                              return guest ? (
-                                <span 
-                                  key={guestId}
-                                  className="text-[10px] bg-background/90 px-1.5 py-0.5 rounded text-foreground"
-                                >
-                                  {guest.name.split(" ")[0]}
-                                </span>
-                              ) : null;
-                            })}
-                            {table.guests.length > 3 && (
-                              <span className="text-[10px] bg-background/90 px-1.5 py-0.5 rounded text-muted-foreground">
-                                +{table.guests.length - 3}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                      {/* Table shape */}
+                      {renderTableShape(table)}
+                      
+                      {/* Chairs */}
+                      <div 
+                        className="absolute"
+                        style={{
+                          left: table.shape === "u-shape" ? 0 : 0,
+                          top: table.shape === "u-shape" ? 0 : 0,
+                          width: dims.width,
+                          height: dims.height,
+                        }}
+                      >
+                        {renderChairs(table)}
+                      </div>
                     </div>
                   );
                 })}
@@ -599,7 +1082,12 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                 return (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-serif font-medium text-foreground">{table.name}</h4>
+                      <div>
+                        <h4 className="font-serif font-medium text-foreground">{table.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {TABLE_SHAPES.find(s => s.id === table.shape)?.label} • {table.guests.length}/{table.capacity} platser
+                        </p>
+                      </div>
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
@@ -621,62 +1109,74 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Guests at table */}
-                      <div>
+                    {/* Selected chair info */}
+                    {selectedChair && selectedChair.tableId === table.id && (
+                      <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                         <p className="text-sm font-medium text-foreground mb-2">
-                          Gäster ({table.guests.length}/{table.capacity})
+                          Stol {selectedChair.chairIndex + 1}
                         </p>
-                        <div className="space-y-1">
-                          {table.guests.map((guestId) => {
-                            const guest = getGuestById(guestId);
-                            if (!guest) return null;
-                            return (
-                              <div
-                                key={guestId}
-                                className="flex items-center justify-between p-2 rounded-lg bg-muted/30"
-                              >
-                                <span className="text-sm text-foreground">{guest.name}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6"
-                                  onClick={() => removeGuestFromTable(table.id, guestId)}
-                                >
-                                  <UserMinus className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Add guest */}
-                      <div>
-                        <p className="text-sm font-medium text-foreground mb-2">Lägg till gäst</p>
-                        {table.guests.length < table.capacity && unassignedGuests.length > 0 ? (
-                          <select
-                            className="w-full text-sm p-2 rounded-lg border border-border bg-background"
-                            value=""
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                addGuestToTable(table.id, e.target.value);
-                              }
-                            }}
-                          >
-                            <option value="">Välj gäst...</option>
-                            {unassignedGuests.map((guest) => (
-                              <option key={guest.id} value={guest.id}>
-                                {guest.name}
-                              </option>
-                            ))}
-                          </select>
+                        {table.chairs[selectedChair.chairIndex]?.guestId ? (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-foreground">
+                              {getGuestById(table.chairs[selectedChair.chairIndex].guestId!)?.name}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeGuestFromChair(table.id, selectedChair.chairIndex)}
+                            >
+                              <UserMinus className="w-4 h-4 mr-1" />
+                              Ta bort
+                            </Button>
+                          </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">
-                            {table.guests.length >= table.capacity 
-                              ? "Bordet är fullt" 
-                              : "Alla gäster är placerade"}
-                          </p>
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-2">Välj en gäst från listan till vänster</p>
+                            {unassignedGuests.length > 0 && (
+                              <select
+                                className="w-full text-sm p-2 rounded-lg border border-border bg-background"
+                                value=""
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    addGuestToChair(table.id, selectedChair.chairIndex, e.target.value);
+                                  }
+                                }}
+                              >
+                                <option value="">Välj gäst...</option>
+                                {unassignedGuests.map((guest) => (
+                                  <option key={guest.id} value={guest.id}>
+                                    {guest.name}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* All guests at table */}
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-2">
+                        Placerade gäster
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {table.chairs.filter(c => c.guestId).map((chair, idx) => {
+                          const guest = getGuestById(chair.guestId!);
+                          if (!guest) return null;
+                          const chairIndex = table.chairs.findIndex(c => c.guestId === chair.guestId);
+                          return (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-sm"
+                            >
+                              <span className="text-xs text-muted-foreground">{chairIndex + 1}.</span>
+                              <span className="text-foreground">{guest.name}</span>
+                            </div>
+                          );
+                        })}
+                        {table.guests.length === 0 && (
+                          <p className="text-sm text-muted-foreground">Inga gäster placerade ännu</p>
                         )}
                       </div>
                     </div>
@@ -688,10 +1188,10 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
         </div>
       </div>
 
-      {/* Export info */}
+      {/* Tips */}
       <div className="bg-muted/30 rounded-xl p-4 text-center">
         <p className="text-sm text-muted-foreground">
-          💡 Tips: Exportera som bild och ladda upp till Vistaprint, Printler eller liknande för att göra en fin förstoring till festen!
+          💡 Tips: Klicka på en stol för att placera en gäst. Dra i stolarna för att byta plats med varandra!
         </p>
       </div>
     </div>
