@@ -14,6 +14,8 @@ import { DrinkCalculator } from "@/components/DrinkCalculator";
 import { FoodCalculator } from "@/components/FoodCalculator";
 import { VisualTablePlanner } from "@/components/VisualTablePlanner";
 import { PremiumGate } from "@/components/PremiumGate";
+import { TrialBanner } from "@/components/TrialBanner";
+import { Timeline } from "@/components/Timeline";
 import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2, Crown } from "lucide-react";
 
 export default function Dashboard() {
@@ -66,6 +68,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-subtle">
+      {/* Trial Banner */}
+      {isTrialActive && trialDaysLeft > 0 && (
+        <TrialBanner 
+          daysLeft={trialDaysLeft} 
+          onUpgradeClick={() => {
+            setPremiumFeatureName("Premium");
+            setPremiumGateOpen(true);
+          }}
+        />
+      )}
+
       <DashboardHeader 
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
@@ -183,6 +196,7 @@ export default function Dashboard() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
+                  onClick={() => setActiveTab("timeline")}
                   className="bg-card rounded-2xl p-6 shadow-sm border border-border hover:shadow-md transition-all text-left group"
                 >
                   <div className="w-12 h-12 rounded-xl bg-taupe-light flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
@@ -293,6 +307,26 @@ export default function Dashboard() {
                 </p>
               </div>
               <BudgetTracker />
+            </motion.div>
+          )}
+
+          {activeTab === "timeline" && (
+            <motion.div
+              key="timeline"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-8">
+                <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
+                  Tidslinje
+                </h2>
+                <p className="text-muted-foreground">
+                  Håll koll på alla viktiga deadlines inför bröllopet
+                </p>
+              </div>
+              <Timeline weddingDate={weddingDate} />
             </motion.div>
           )}
 
