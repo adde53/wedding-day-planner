@@ -742,10 +742,10 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                   </Select>
                 </div>
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Avbryt
                   </Button>
-                  <Button onClick={handleAddTable}>
+                  <Button type="button" onClick={handleAddTable}>
                     {editingTable ? "Spara" : "Lägg till"}
                   </Button>
                 </div>
