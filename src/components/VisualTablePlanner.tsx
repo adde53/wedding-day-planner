@@ -462,6 +462,22 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     setSelectedTable(tableId);
   };
 
+  const handleTableTouchStart = (e: React.TouchEvent, tableId: string) => {
+    e.stopPropagation();
+    if (!canvasRef.current) return;
+    const table = tables.find(t => t.id === tableId);
+    if (!table) return;
+
+    const touch = e.touches[0];
+    const rect = canvasRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: (touch.clientX - rect.left) / zoom - table.x,
+      y: (touch.clientY - rect.top) / zoom - table.y,
+    });
+    setDraggedTable(tableId);
+    setSelectedTable(tableId);
+  };
+
   const handleChairClick = (e: React.MouseEvent, tableId: string, chairIndex: number) => {
     e.stopPropagation();
     
@@ -488,6 +504,19 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     const rect = canvasRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / zoom - dragOffset.x;
     const y = (e.clientY - rect.top) / zoom - dragOffset.y;
+
+    setTables(prev => prev.map(t => 
+      t.id === draggedTable ? { ...t, x: Math.max(100, x), y: Math.max(100, y) } : t
+    ));
+  }, [draggedTable, dragOffset, zoom]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!draggedTable || !canvasRef.current) return;
+
+    const touch = e.touches[0];
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = (touch.clientX - rect.left) / zoom - dragOffset.x;
+    const y = (touch.clientY - rect.top) / zoom - dragOffset.y;
 
     setTables(prev => prev.map(t => 
       t.id === draggedTable ? { ...t, x: Math.max(100, x), y: Math.max(100, y) } : t
@@ -887,7 +916,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
             ) : (
               <div
                 ref={canvasRef}
-                className="relative canvas-bg"
+                className="relative canvas-bg touch-none"
                 style={{ 
                   minHeight: "600px",
                   height: `${600 / zoom}px`,
@@ -899,6 +928,8 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleMouseUp}
                 onClick={handleCanvasClick}
               >
                 {/* Grid */}
@@ -988,6 +1019,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                           boxShadow: isSelected ? "0 8px 30px -10px hsl(var(--primary) / 0.3)" : "0 4px 15px -5px rgba(0,0,0,0.1)",
                         }}
                         onMouseDown={(e) => handleTableMouseDown(e, table.id)}
+                        onTouchStart={(e) => handleTableTouchStart(e, table.id)}
                       >
                         {table.shape === "u-shape" ? (
                           <div className="relative w-full h-full">
