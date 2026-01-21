@@ -319,7 +319,7 @@ export default function Landing() {
             </div>
             <ul className="relative space-y-3 mb-8">
               {[
-                "Egen bröllopshemsida med QR-koder",
+                "Egen bröllopshemsida med gästkoder",
                 "Dryckeskalkylator med prisestimat",
                 "Matkalkylator med cateringpriser", 
                 "Bordsplacering för alla gäster",
