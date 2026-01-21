@@ -21,6 +21,7 @@ const tabs = [
   { id: "timeline", label: "Tidslinje", premium: false },
   { id: "food", label: "Mat", premium: true },
   { id: "drinks", label: "Drycker", premium: true },
+  { id: "website", label: "Hemsida", premium: true },
   { id: "settings", label: "Inställningar", premium: false },
 ];
 
