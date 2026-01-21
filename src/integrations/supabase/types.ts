@@ -170,6 +170,87 @@ export type Database = {
         }
         Relationships: []
       }
+      seating_chairs: {
+        Row: {
+          chair_index: number
+          created_at: string
+          guest_id: string | null
+          id: string
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          chair_index: number
+          created_at?: string
+          guest_id?: string | null
+          id?: string
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          chair_index?: number
+          created_at?: string
+          guest_id?: string | null
+          id?: string
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seating_chairs_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seating_chairs_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "seating_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seating_tables: {
+        Row: {
+          capacity: number
+          created_at: string
+          id: string
+          name: string
+          position_x: number
+          position_y: number
+          rotation: number
+          shape: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          id?: string
+          name: string
+          position_x?: number
+          position_y?: number
+          rotation?: number
+          shape?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          id?: string
+          name?: string
+          position_x?: number
+          position_y?: number
+          rotation?: number
+          shape?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
