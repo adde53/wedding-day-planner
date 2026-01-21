@@ -16,7 +16,8 @@ import { VisualTablePlanner } from "@/components/VisualTablePlanner";
 import { PremiumGate } from "@/components/PremiumGate";
 import { TrialBanner } from "@/components/TrialBanner";
 import { Timeline } from "@/components/Timeline";
-import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2, Crown } from "lucide-react";
+import { WeddingWebsiteBuilder } from "@/components/WeddingWebsiteBuilder";
+import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2, Crown, Globe } from "lucide-react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -367,6 +368,26 @@ export default function Dashboard() {
                 </p>
               </div>
               <DrinkCalculator confirmedGuests={guestStats.confirmed} weddingDate={weddingDate} />
+            </motion.div>
+          )}
+
+          {activeTab === "website" && (
+            <motion.div
+              key="website"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-8">
+                <h2 className="font-serif text-3xl font-medium text-foreground mb-2">
+                  Bröllopshemsida
+                </h2>
+                <p className="text-muted-foreground">
+                  Bygg en vacker hemsida för era gäster
+                </p>
+              </div>
+              <WeddingWebsiteBuilder />
             </motion.div>
           )}
 

@@ -12,7 +12,9 @@ import {
   ChevronUp,
   Search,
   Utensils,
-  Download
+  Download,
+  Key,
+  Copy
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,6 +47,7 @@ interface Guest {
   plus_one_name: string | null;
   rsvp_status: "pending" | "confirmed" | "declined";
   notes: string | null;
+  access_code: string | null;
 }
 
 interface GuestListProps {
@@ -209,6 +212,51 @@ export function GuestList({ onGuestStatsChange }: GuestListProps) {
     } else {
       fetchGuests();
     }
+  };
+
+  const generateAccessCode = async (guestId: string) => {
+    // Call the database function to generate a unique code
+    const { data, error } = await supabase
+      .rpc("generate_access_code");
+
+    if (error) {
+      toast.error("Kunde inte generera kod");
+      console.error(error);
+      return;
+    }
+
+    // Update the guest with the new code
+    const { error: updateError } = await supabase
+      .from("guests")
+      .update({ access_code: data })
+      .eq("id", guestId);
+
+    if (updateError) {
+      toast.error("Kunde inte spara koden");
+      console.error(updateError);
+    } else {
+      toast.success("Åtkomstkod genererad!");
+      fetchGuests();
+    }
+  };
+
+  const generateAllAccessCodes = async () => {
+    const guestsWithoutCode = guests.filter(g => !g.access_code);
+    
+    for (const guest of guestsWithoutCode) {
+      await generateAccessCode(guest.id);
+    }
+    
+    if (guestsWithoutCode.length > 0) {
+      toast.success(`${guestsWithoutCode.length} åtkomstkoder genererade!`);
+    } else {
+      toast.info("Alla gäster har redan en kod");
+    }
+  };
+
+  const copyAccessCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast.success("Kod kopierad!");
   };
 
   // Statistics

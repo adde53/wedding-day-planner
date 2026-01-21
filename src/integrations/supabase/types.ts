@@ -85,6 +85,7 @@ export type Database = {
       }
       guests: {
         Row: {
+          access_code: string | null
           created_at: string
           dietary_restrictions: string | null
           email: string | null
@@ -100,6 +101,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          access_code?: string | null
           created_at?: string
           dietary_restrictions?: string | null
           email?: string | null
@@ -115,6 +117,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          access_code?: string | null
           created_at?: string
           dietary_restrictions?: string | null
           email?: string | null
@@ -188,11 +191,119 @@ export type Database = {
         }
         Relationships: []
       }
+      wedding_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          display_order: number
+          id: string
+          photo_url: string
+          website_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          photo_url: string
+          website_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          photo_url?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_photos_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wedding_websites: {
+        Row: {
+          additional_info: string | null
+          ceremony_address: string | null
+          ceremony_location: string | null
+          ceremony_time: string | null
+          couple_description: string | null
+          couple_names: string | null
+          couple_photo_url: string | null
+          created_at: string
+          font_family: string | null
+          id: string
+          is_published: boolean
+          our_story: string | null
+          primary_color: string | null
+          reception_address: string | null
+          reception_location: string | null
+          secondary_color: string | null
+          slug: string
+          theme: string
+          updated_at: string
+          user_id: string
+          wedding_date: string | null
+        }
+        Insert: {
+          additional_info?: string | null
+          ceremony_address?: string | null
+          ceremony_location?: string | null
+          ceremony_time?: string | null
+          couple_description?: string | null
+          couple_names?: string | null
+          couple_photo_url?: string | null
+          created_at?: string
+          font_family?: string | null
+          id?: string
+          is_published?: boolean
+          our_story?: string | null
+          primary_color?: string | null
+          reception_address?: string | null
+          reception_location?: string | null
+          secondary_color?: string | null
+          slug: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+          wedding_date?: string | null
+        }
+        Update: {
+          additional_info?: string | null
+          ceremony_address?: string | null
+          ceremony_location?: string | null
+          ceremony_time?: string | null
+          couple_description?: string | null
+          couple_names?: string | null
+          couple_photo_url?: string | null
+          created_at?: string
+          font_family?: string | null
+          id?: string
+          is_published?: boolean
+          our_story?: string | null
+          primary_color?: string | null
+          reception_address?: string | null
+          reception_location?: string | null
+          secondary_color?: string | null
+          slug?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+          wedding_date?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_access_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
