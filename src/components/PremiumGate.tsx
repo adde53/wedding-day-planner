@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
-import { Crown, Check, ArrowRight, Sparkles, Loader2 } from "lucide-react";
+import { Crown, Check, ArrowRight, Sparkles, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 
 interface PremiumGateProps {
@@ -37,9 +38,19 @@ export function PremiumGate({
 }: PremiumGateProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        {/* Mobile close button */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10"
+          disabled={isProcessingPayment}
+        >
+          <X className="h-5 w-5" />
+          <span className="sr-only">Stäng</span>
+        </button>
+        
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl text-center flex flex-col items-center gap-3">
+          <DialogTitle className="font-serif text-2xl text-center flex flex-col items-center gap-3 pt-2">
             <div className="w-16 h-16 rounded-2xl bg-gold-light flex items-center justify-center">
               <Crown className="w-8 h-8 text-accent" />
             </div>
