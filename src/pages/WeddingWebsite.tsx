@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Calendar, MapPin, Clock, Users, Send, Check, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,6 +49,7 @@ interface GuestData {
 
 export default function WeddingWebsite() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [website, setWebsite] = useState<WebsiteData | null>(null);
   const [photos, setPhotos] = useState<WeddingPhoto[]>([]);
@@ -66,6 +67,14 @@ export default function WeddingWebsite() {
   const [dietaryRestrictions, setDietaryRestrictions] = useState("");
   const [plusOneName, setPlusOneName] = useState("");
   const [rsvpNotes, setRsvpNotes] = useState("");
+
+  // Auto-fill access code from URL parameter
+  useEffect(() => {
+    const codeFromUrl = searchParams.get("code");
+    if (codeFromUrl) {
+      setAccessCode(codeFromUrl.toUpperCase());
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchWebsite = async () => {
@@ -102,6 +111,14 @@ export default function WeddingWebsite() {
 
     fetchWebsite();
   }, [slug]);
+
+  // Auto-verify code when website is loaded and code is from URL
+  useEffect(() => {
+    const codeFromUrl = searchParams.get("code");
+    if (website && codeFromUrl && !guest && !isVerifying) {
+      verifyAccessCode();
+    }
+  }, [website, searchParams]);
 
   const verifyAccessCode = async () => {
     if (!website || !accessCode.trim()) return;
