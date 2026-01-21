@@ -13,6 +13,7 @@ import {
   UserMinus,
   X,
   RotateCw,
+  Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
+import { useSeatingTables, type TableData, type ChairData } from "@/hooks/useSeatingTables";
 
 interface Guest {
   id: string;
@@ -42,23 +44,6 @@ interface Guest {
   plus_one: boolean;
   plus_one_name: string | null;
   rsvp_status: string;
-}
-
-interface ChairData {
-  guestId: string | null;
-  position: { x: number; y: number };
-}
-
-interface TableData {
-  id: string;
-  name: string;
-  capacity: number;
-  guests: string[];
-  chairs: ChairData[];
-  x: number;
-  y: number;
-  shape: "round" | "rectangle" | "square" | "head" | "u-shape";
-  rotation: number;
 }
 
 interface VisualTablePlannerProps {
@@ -73,200 +58,16 @@ const TABLE_SHAPES = [
   { id: "u-shape", label: "U-format bord", icon: "⊔" },
 ];
 
-const CHAIR_SIZE = 32; // Visual size of chairs
-const CHAIR_GAP = 8; // Minimum gap between chairs
+const CHAIR_SIZE = 32;
+const CHAIR_GAP = 8;
 
-// Calculate table size based on capacity - used by both chair positions and rendering
-const getTableSizeForCapacity = (shape: TableData["shape"], capacity: number) => {
-  const chairSpacing = CHAIR_SIZE + CHAIR_GAP; // Space needed per chair
-  
-  switch (shape) {
-    case "round": {
-      // For round tables, chairs sit around the circumference
-      // Circumference needed = capacity * space per chair
-      const minCircumference = capacity * chairSpacing;
-      const orbitRadius = minCircumference / (2 * Math.PI);
-      // Table radius is smaller than orbit (chairs sit outside the table)
-      const tableRadius = Math.max(40, orbitRadius - CHAIR_SIZE / 2 - 10);
-      return { tableRadius, orbitRadius: Math.max(orbitRadius, tableRadius + CHAIR_SIZE / 2 + 10) };
-    }
-    case "rectangle": {
-      const seatsPerSide = Math.ceil(capacity / 2);
-      const width = Math.max(100, seatsPerSide * chairSpacing);
-      const height = 50;
-      return { width, height };
-    }
-    case "square": {
-      const perSide = Math.ceil(capacity / 4);
-      const size = Math.max(60, perSide * chairSpacing);
-      return { size };
-    }
-    case "head": {
-      const width = Math.max(120, capacity * chairSpacing);
-      return { width, height: 35 };
-    }
-    case "u-shape": {
-      const baseSeats = Math.ceil(capacity * 0.5);
-      const armSeats = Math.ceil(capacity * 0.25);
-      const baseWidth = Math.max(150, baseSeats * chairSpacing);
-      const armHeight = Math.max(80, armSeats * chairSpacing);
-      return { baseWidth, armHeight };
-    }
-    default:
-      return { tableRadius: 50, orbitRadius: 80 };
-  }
-};
-
-// Generate chair positions based on table shape
-const generateChairPositions = (shape: TableData["shape"], capacity: number): ChairData[] => {
-  const chairs: ChairData[] = [];
-  const chairSpacing = CHAIR_SIZE + CHAIR_GAP;
-  
-  if (shape === "round") {
-    const { orbitRadius } = getTableSizeForCapacity(shape, capacity);
-    for (let i = 0; i < capacity; i++) {
-      const angle = ((360 / capacity) * i - 90) * (Math.PI / 180);
-      chairs.push({
-        guestId: null,
-        position: {
-          x: Math.cos(angle) * orbitRadius,
-          y: Math.sin(angle) * orbitRadius,
-        },
-      });
-    }
-  } else if (shape === "head") {
-    // Head table: all chairs on one side (front)
-    const { width: tableWidth, height: tableHeight } = getTableSizeForCapacity(shape, capacity);
-    const totalWidth = capacity * chairSpacing;
-    const startX = -totalWidth / 2 + chairSpacing / 2;
-    for (let i = 0; i < capacity; i++) {
-      chairs.push({
-        guestId: null,
-        position: {
-          x: startX + i * chairSpacing,
-          y: -tableHeight / 2 - CHAIR_SIZE / 2 - 8,
-        },
-      });
-    }
-  } else if (shape === "u-shape") {
-    // U-shape: distribute on outside of U
-    const { baseWidth, armHeight } = getTableSizeForCapacity(shape, capacity);
-    const leftArm = Math.ceil(capacity * 0.25);
-    const rightArm = Math.ceil(capacity * 0.25);
-    const base = capacity - leftArm - rightArm;
-    
-    const armSpacing = armHeight / (Math.max(leftArm, rightArm) + 1);
-    const baseSpacing = baseWidth / (base + 1);
-    
-    // Left arm (outside)
-    for (let i = 0; i < leftArm; i++) {
-      chairs.push({
-        guestId: null,
-        position: {
-          x: -baseWidth / 2 - CHAIR_SIZE / 2 - 10,
-          y: -armHeight / 2 + armSpacing * (i + 1),
-        },
-      });
-    }
-    // Right arm (outside)
-    for (let i = 0; i < rightArm; i++) {
-      chairs.push({
-        guestId: null,
-        position: {
-          x: baseWidth / 2 + CHAIR_SIZE / 2 + 10,
-          y: -armHeight / 2 + armSpacing * (i + 1),
-        },
-      });
-    }
-    // Base (bottom)
-    for (let i = 0; i < base; i++) {
-      chairs.push({
-        guestId: null,
-        position: {
-          x: -baseWidth / 2 + baseSpacing * (i + 1),
-          y: armHeight / 2 + CHAIR_SIZE / 2 + 10,
-        },
-      });
-    }
-  } else if (shape === "rectangle") {
-    const { width: tableWidth, height: tableHeight } = getTableSizeForCapacity(shape, capacity);
-    const topCount = Math.ceil(capacity / 2);
-    const bottomCount = capacity - topCount;
-    
-    // Calculate spacing to fit chairs evenly
-    const topTotalWidth = topCount * chairSpacing;
-    const bottomTotalWidth = bottomCount * chairSpacing;
-    
-    // Top row
-    const topStartX = -topTotalWidth / 2 + chairSpacing / 2;
-    for (let i = 0; i < topCount; i++) {
-      chairs.push({
-        guestId: null,
-        position: {
-          x: topStartX + i * chairSpacing,
-          y: -tableHeight / 2 - CHAIR_SIZE / 2 - 8,
-        },
-      });
-    }
-    
-    // Bottom row
-    const bottomStartX = -bottomTotalWidth / 2 + chairSpacing / 2;
-    for (let i = 0; i < bottomCount; i++) {
-      chairs.push({
-        guestId: null,
-        position: {
-          x: bottomStartX + i * chairSpacing,
-          y: tableHeight / 2 + CHAIR_SIZE / 2 + 8,
-        },
-      });
-    }
-  } else {
-    // Square: distribute on all 4 sides
-    const { size: tableSize } = getTableSizeForCapacity(shape, capacity);
-    const perSide = Math.ceil(capacity / 4);
-    
-    let chairIdx = 0;
-    const sides = ["top", "right", "bottom", "left"];
-    
-    for (const side of sides) {
-      if (chairIdx >= capacity) break;
-      const count = Math.min(perSide, capacity - chairIdx);
-      const sideWidth = count * chairSpacing;
-      const startPos = -sideWidth / 2 + chairSpacing / 2;
-      
-      for (let i = 0; i < count && chairIdx < capacity; i++) {
-        let x = 0, y = 0;
-        const offset = startPos + i * chairSpacing;
-        const edgeDist = tableSize / 2 + CHAIR_SIZE / 2 + 8;
-        
-        if (side === "top") {
-          x = offset;
-          y = -edgeDist;
-        } else if (side === "right") {
-          x = edgeDist;
-          y = offset;
-        } else if (side === "bottom") {
-          x = offset;
-          y = edgeDist;
-        } else {
-          x = -edgeDist;
-          y = offset;
-        }
-        chairs.push({ guestId: null, position: { x, y } });
-        chairIdx++;
-      }
-    }
-  }
-  
-  return chairs;
-};
 
 export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps) {
   const { user } = useAuth();
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [tables, setTables] = useState<TableData[]>([]);
+  const { tables, saveTables, isLoading: isLoadingTables, isSaving, generateChairPositions, getTableSizeForCapacity } = useSeatingTables();
   const [guests, setGuests] = useState<Guest[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingGuests, setIsLoadingGuests] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<TableData | null>(null);
   const [formData, setFormData] = useState({ name: "", capacity: 8, shape: "round" as TableData["shape"] });
@@ -276,11 +77,16 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
+  const [localTables, setLocalTables] = useState<TableData[]>([]);
+
+  // Sync local tables with hook tables
+  useEffect(() => {
+    setLocalTables(tables);
+  }, [tables]);
 
   useEffect(() => {
     if (user) {
       fetchGuests();
-      loadTablesFromStorage();
     }
   }, [user]);
 
@@ -298,23 +104,13 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     } else {
       setGuests(data || []);
     }
-    setIsLoading(false);
+    setIsLoadingGuests(false);
   };
 
-  const loadTablesFromStorage = () => {
-    if (!user) return;
-    const stored = localStorage.getItem(`visual_tables_v3_${user.id}`);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setTables(parsed);
-    }
-  };
-
-  const saveTablestoStorage = useCallback((newTables: TableData[]) => {
-    if (!user) return;
-    localStorage.setItem(`visual_tables_v3_${user.id}`, JSON.stringify(newTables));
-    setTables(newTables);
-  }, [user]);
+  const saveTablesHandler = useCallback((newTables: TableData[]) => {
+    setLocalTables(newTables);
+    saveTables(newTables);
+  }, [saveTables]);
 
   const handleAddTable = () => {
     if (!formData.name.trim()) {
@@ -323,7 +119,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     }
 
     if (editingTable) {
-      const updated = tables.map(t => {
+      const updated = localTables.map(t => {
         if (t.id === editingTable.id) {
           // Only regenerate chairs if shape or capacity changed
           const needsNewChairs = t.shape !== formData.shape || t.capacity !== formData.capacity;
@@ -351,7 +147,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
         }
         return t;
       });
-      saveTablestoStorage(updated);
+      saveTablesHandler(updated);
       toast.success("Bordet har uppdaterats");
     } else {
       const chairs = generateChairPositions(formData.shape, formData.capacity);
@@ -366,7 +162,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
         shape: formData.shape,
         rotation: 0,
       };
-      saveTablestoStorage([...tables, newTable]);
+      saveTablesHandler([...localTables, newTable]);
       toast.success("Bordet har skapats");
     }
 
@@ -376,8 +172,8 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   };
 
   const handleDeleteTable = (tableId: string) => {
-    const updated = tables.filter(t => t.id !== tableId);
-    saveTablestoStorage(updated);
+    const updated = localTables.filter(t => t.id !== tableId);
+    saveTablesHandler(updated);
     setSelectedTable(null);
     setSelectedChair(null);
     toast.success("Bordet har tagits bort");
@@ -390,7 +186,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   };
 
   const addGuestToChair = (tableId: string, chairIndex: number, guestId: string) => {
-    const updated = tables.map(t => {
+    const updated = localTables.map(t => {
       // First remove guest from all chairs in all tables
       const newChairs = t.chairs.map(chair => 
         chair.guestId === guestId ? { ...chair, guestId: null } : chair
@@ -404,18 +200,18 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
       const newGuests = newChairs.filter(c => c.guestId).map(c => c.guestId as string);
       return { ...t, chairs: newChairs, guests: newGuests };
     });
-    saveTablestoStorage(updated);
+    saveTablesHandler(updated);
     toast.success("Gäst placerad");
   };
 
   const removeGuestFromChair = (tableId: string, chairIndex: number) => {
-    const table = tables.find(t => t.id === tableId);
+    const table = localTables.find(t => t.id === tableId);
     if (!table) return;
     
     const guestId = table.chairs[chairIndex]?.guestId;
     if (!guestId) return;
     
-    const updated = tables.map(t => {
+    const updated = localTables.map(t => {
       if (t.id === tableId) {
         const newChairs = [...t.chairs];
         newChairs[chairIndex] = { ...newChairs[chairIndex], guestId: null };
@@ -424,7 +220,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
       }
       return t;
     });
-    saveTablestoStorage(updated);
+    saveTablesHandler(updated);
     setSelectedChair(null);
     toast.success("Gäst borttagen från stolen");
   };
@@ -432,7 +228,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   const swapChairs = (tableId: string, fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return;
     
-    const updated = tables.map(t => {
+    const updated = localTables.map(t => {
       if (t.id === tableId) {
         const newChairs = [...t.chairs];
         const tempGuest = newChairs[fromIndex].guestId;
@@ -443,14 +239,14 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
       }
       return t;
     });
-    saveTablestoStorage(updated);
+    saveTablesHandler(updated);
     toast.success("Platser bytta");
   };
 
   const handleTableMouseDown = (e: React.MouseEvent, tableId: string) => {
     e.stopPropagation();
     if (!canvasRef.current) return;
-    const table = tables.find(t => t.id === tableId);
+    const table = localTables.find(t => t.id === tableId);
     if (!table) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
@@ -465,7 +261,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   const handleTableTouchStart = (e: React.TouchEvent, tableId: string) => {
     e.stopPropagation();
     if (!canvasRef.current) return;
-    const table = tables.find(t => t.id === tableId);
+    const table = localTables.find(t => t.id === tableId);
     if (!table) return;
 
     const touch = e.touches[0];
@@ -505,7 +301,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     const x = (e.clientX - rect.left) / zoom - dragOffset.x;
     const y = (e.clientY - rect.top) / zoom - dragOffset.y;
 
-    setTables(prev => prev.map(t => 
+    setLocalTables(prev => prev.map(t => 
       t.id === draggedTable ? { ...t, x: Math.max(100, x), y: Math.max(100, y) } : t
     ));
   }, [draggedTable, dragOffset, zoom]);
@@ -518,17 +314,17 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     const x = (touch.clientX - rect.left) / zoom - dragOffset.x;
     const y = (touch.clientY - rect.top) / zoom - dragOffset.y;
 
-    setTables(prev => prev.map(t => 
+    setLocalTables(prev => prev.map(t => 
       t.id === draggedTable ? { ...t, x: Math.max(100, x), y: Math.max(100, y) } : t
     ));
   }, [draggedTable, dragOffset, zoom]);
 
   const handleMouseUp = useCallback(() => {
     if (draggedTable) {
-      saveTablestoStorage(tables);
+      saveTablesHandler(localTables);
       setDraggedTable(null);
     }
-  }, [draggedTable, tables, saveTablestoStorage]);
+  }, [draggedTable, localTables, saveTablesHandler]);
 
   const handleCanvasClick = (e: React.MouseEvent) => {
     // Only deselect if clicking on canvas background
@@ -568,31 +364,32 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
   };
 
   const resetPositions = () => {
-    const updated = tables.map((t, i) => ({
+    const updated = localTables.map((t, i) => ({
       ...t,
       x: 200 + (i % 3) * 300,
       y: 200 + Math.floor(i / 3) * 300,
       rotation: 0,
     }));
-    saveTablestoStorage(updated);
+    saveTablesHandler(updated);
     toast.success("Positioner återställda");
   };
 
   const rotateTable = (tableId: string, degrees: number) => {
-    const updated = tables.map(t => 
+    const updated = localTables.map(t => 
       t.id === tableId ? { ...t, rotation: ((t.rotation || 0) + degrees) % 360 } : t
     );
-    saveTablestoStorage(updated);
+    saveTablesHandler(updated);
   };
 
   const unassignedGuests = guests.filter(
-    g => !tables.some(t => t.guests.includes(g.id))
+    g => !localTables.some(t => t.guests.includes(g.id))
   );
 
   const getGuestById = (id: string) => guests.find(g => g.id === id);
 
-  const totalSeats = tables.reduce((sum, t) => sum + t.capacity, 0);
-  const totalAssigned = tables.reduce((sum, t) => sum + t.guests.length, 0);
+  const totalSeats = localTables.reduce((sum, t) => sum + t.capacity, 0);
+  const totalAssigned = localTables.reduce((sum, t) => sum + t.guests.length, 0);
+  const isLoading = isLoadingTables || isLoadingGuests;
 
   const getTableDimensions = (table: TableData) => {
     const sizeInfo = getTableSizeForCapacity(table.shape, table.capacity);
@@ -640,7 +437,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
               <Table2 className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-serif font-medium text-foreground">{tables.length}</p>
+              <p className="text-2xl font-serif font-medium text-foreground">{localTables.length}</p>
               <p className="text-sm text-muted-foreground">Bord</p>
             </div>
           </div>
@@ -766,7 +563,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
           variant="outline" 
           className="gap-2"
           onClick={handleExport}
-          disabled={tables.length === 0 || isExporting}
+          disabled={localTables.length === 0 || isExporting}
         >
           <Download className="w-4 h-4" />
           {isExporting ? "Exporterar..." : "Exportera som bild"}
@@ -839,7 +636,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                 </Button>
               </div>
               {(() => {
-                const table = tables.find(t => t.id === selectedChair.tableId);
+                const table = localTables.find(t => t.id === selectedChair.tableId);
                 if (!table) return null;
                 const chair = table.chairs[selectedChair.chairIndex];
                 const guest = chair?.guestId ? getGuestById(chair.guestId) : null;
@@ -903,7 +700,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
             className="bg-card rounded-xl border border-border overflow-hidden"
             style={{ minHeight: "600px" }}
           >
-            {tables.length === 0 ? (
+            {localTables.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[600px] text-center p-8">
                 <Table2 className="w-16 h-16 text-muted-foreground mb-4" />
                 <h3 className="font-serif text-xl font-medium text-foreground mb-2">
@@ -941,7 +738,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                   }}
                 />
 
-                {tables.map((table) => {
+                {localTables.map((table) => {
                   const dims = getTableDimensions(table);
                   const isSelected = selectedTable === table.id;
 
@@ -1075,7 +872,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
               className="mt-4 bg-card rounded-xl border border-border p-4"
             >
               {(() => {
-                const table = tables.find(t => t.id === selectedTable);
+                const table = localTables.find(t => t.id === selectedTable);
                 if (!table) return null;
 
                 return (
