@@ -17,7 +17,8 @@ import { PremiumGate } from "@/components/PremiumGate";
 import { TrialBanner } from "@/components/TrialBanner";
 import { Timeline } from "@/components/Timeline";
 import { WeddingWebsiteBuilder } from "@/components/WeddingWebsiteBuilder";
-import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2, Crown, Globe } from "lucide-react";
+import { SupportDialog } from "@/components/SupportDialog";
+import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2, Crown, Globe, MessageCircle } from "lucide-react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -423,9 +424,17 @@ export default function Dashboard() {
                 MittBröllop.se
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Med kärlek, för er stora dag ❤️
-            </p>
+            <div className="flex items-center gap-6">
+              <SupportDialog>
+                <button className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                  <MessageCircle className="w-4 h-4" />
+                  Kontakta support
+                </button>
+              </SupportDialog>
+              <p className="text-sm text-muted-foreground">
+                Med kärlek, för er stora dag ❤️
+              </p>
+            </div>
           </div>
         </div>
       </footer>

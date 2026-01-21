@@ -12,10 +12,12 @@ import {
   Table2,
   Crown,
   Check,
-  Globe
+  Globe,
+  MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { SupportDialog } from "@/components/SupportDialog";
 
 const freeFeatures = [
   {
@@ -391,9 +393,17 @@ export default function Landing() {
                 MittBröllop.se
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © 2025 MittBröllop.se. Bröllopsplanering gjord enkel.
-            </p>
+            <div className="flex items-center gap-6">
+              <SupportDialog>
+                <button className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                  <MessageCircle className="w-4 h-4" />
+                  Kontakta support
+                </button>
+              </SupportDialog>
+              <p className="text-sm text-muted-foreground">
+                © 2025 MittBröllop.se
+              </p>
+            </div>
           </div>
         </div>
       </footer>
