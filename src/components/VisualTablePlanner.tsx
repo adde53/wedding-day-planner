@@ -12,6 +12,7 @@ import {
   Table2,
   UserMinus,
   X,
+  RotateCw,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -57,6 +58,7 @@ interface TableData {
   x: number;
   y: number;
   shape: "round" | "rectangle" | "square" | "head" | "u-shape";
+  rotation: number;
 }
 
 interface VisualTablePlannerProps {
@@ -362,6 +364,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
         x: 200 + Math.random() * 150,
         y: 200 + Math.random() * 150,
         shape: formData.shape,
+        rotation: 0,
       };
       saveTablestoStorage([...tables, newTable]);
       toast.success("Bordet har skapats");
@@ -540,9 +543,17 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
       ...t,
       x: 200 + (i % 3) * 300,
       y: 200 + Math.floor(i / 3) * 300,
+      rotation: 0,
     }));
     saveTablestoStorage(updated);
     toast.success("Positioner återställda");
+  };
+
+  const rotateTable = (tableId: string, degrees: number) => {
+    const updated = tables.map(t => 
+      t.id === tableId ? { ...t, rotation: ((t.rotation || 0) + degrees) % 360 } : t
+    );
+    saveTablestoStorage(updated);
   };
 
   const unassignedGuests = guests.filter(
@@ -910,7 +921,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                       style={{
                         left: table.x,
                         top: table.y,
-                        transform: "translate(-50%, -50%)",
+                        transform: `translate(-50%, -50%) rotate(${table.rotation || 0}deg)`,
                       }}
                     >
                       {/* Chairs */}
@@ -1044,6 +1055,24 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                       </p>
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => rotateTable(table.id, -15)}
+                        title="Rotera vänster"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => rotateTable(table.id, 15)}
+                        title="Rotera höger"
+                      >
+                        <RotateCw className="w-4 h-4" />
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"
