@@ -246,7 +246,7 @@ export default function Dashboard() {
                   Klicka på uppgifter för att markera dem som klara
                 </p>
               </div>
-              <WeddingChecklist onProgressChange={setCompletedTasks} />
+              <WeddingChecklist onProgressChange={setCompletedTasks} weddingDate={weddingDate} />
             </motion.div>
           )}
 

@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { format, subMonths } from "date-fns";
+import { sv } from "date-fns/locale";
 
 interface ChecklistItem {
   id: string;
@@ -72,9 +74,37 @@ const defaultCategories: ChecklistCategory[] = [
 
 interface WeddingChecklistProps {
   onProgressChange?: (completed: number) => void;
+  weddingDate?: Date;
 }
 
-export function WeddingChecklist({ onProgressChange }: WeddingChecklistProps) {
+// Helper to get timeframe deadline date
+const getTimeframeDeadline = (timeframe: string, weddingDate: Date): Date => {
+  switch (timeframe) {
+    case "12-months":
+      return subMonths(weddingDate, 12);
+    case "6-9-months":
+      return subMonths(weddingDate, 6);
+    case "3-6-months":
+      return subMonths(weddingDate, 3);
+    case "1-3-months":
+      return subMonths(weddingDate, 1);
+    default:
+      return weddingDate;
+  }
+};
+
+const getTimeframeLabel = (timeframe: string, weddingDate: Date): string => {
+  const deadline = getTimeframeDeadline(timeframe, weddingDate);
+  return `Senast ${format(deadline, "d MMMM yyyy", { locale: sv })}`;
+};
+
+export function WeddingChecklist({ onProgressChange, weddingDate }: WeddingChecklistProps) {
+  // Default wedding date if not provided (8 months from now)
+  const effectiveWeddingDate = weddingDate || (() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() + 8);
+    return date;
+  })();
   const { user } = useAuth();
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(["12-months"]);
@@ -351,7 +381,9 @@ export function WeddingChecklist({ onProgressChange }: WeddingChecklistProps) {
                   <h3 className="font-serif text-lg font-medium text-foreground">
                     {category.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground">{category.timeframe}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {getTimeframeLabel(category.id, effectiveWeddingDate)}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
