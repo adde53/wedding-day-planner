@@ -11,7 +11,8 @@ import {
   UtensilsCrossed,
   Table2,
   Crown,
-  Check
+  Check,
+  Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,6 +45,11 @@ const freeFeatures = [
 ];
 
 const premiumFeatures = [
+  {
+    icon: Globe,
+    title: "Bröllopshemsida",
+    description: "Skapa en vacker hemsida för era gäster med RSVP, bildgalleri och all praktisk info.",
+  },
   {
     icon: Wine,
     title: "Dryckeskalkylator",
@@ -269,7 +275,7 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {premiumFeatures.map((feature, i) => (
               <motion.article
                 key={feature.title}
@@ -313,6 +319,7 @@ export default function Landing() {
             </div>
             <ul className="relative space-y-3 mb-8">
               {[
+                "Egen bröllopshemsida med QR-koder",
                 "Dryckeskalkylator med prisestimat",
                 "Matkalkylator med cateringpriser", 
                 "Bordsplacering för alla gäster",
