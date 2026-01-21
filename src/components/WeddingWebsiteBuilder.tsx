@@ -1,10 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Globe, Eye, EyeOff, Save, Upload, Trash2, Plus, 
   Palette, Type, Calendar, MapPin, Heart, Image, 
-  FileText, Link2, Copy, Check, ExternalLink, Settings2
+  FileText, Link2, Copy, Check, ExternalLink, Settings2,
+  Users, KeyRound, RefreshCw
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useWeddingWebsite, WeddingWebsite } from "@/hooks/useWeddingWebsite";
 import { useProfile } from "@/hooks/useProfile";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const THEMES = [
@@ -232,6 +236,10 @@ export function WeddingWebsiteBuilder() {
               <TabsTrigger value="content" className="gap-2 data-[state=active]:bg-primary/10">
                 <FileText className="w-4 h-4" />
                 Innehåll
+              </TabsTrigger>
+              <TabsTrigger value="guestcodes" className="gap-2 data-[state=active]:bg-primary/10">
+                <KeyRound className="w-4 h-4" />
+                Gästkoder
               </TabsTrigger>
             </TabsList>
           </div>
@@ -594,6 +602,10 @@ export function WeddingWebsiteBuilder() {
                 </p>
               </div>
             </TabsContent>
+
+            <TabsContent value="guestcodes" className="mt-0">
+              <GuestCodesSection websiteUrl={websiteUrl} />
+            </TabsContent>
           </div>
 
           {/* Save Button */}
@@ -609,6 +621,285 @@ export function WeddingWebsiteBuilder() {
           </div>
         </Tabs>
       </motion.div>
+    </div>
+  );
+}
+
+interface Guest {
+  id: string;
+  name: string;
+  email: string | null;
+  access_code: string | null;
+  rsvp_status: string;
+}
+
+function GuestCodesSection({ websiteUrl }: { websiteUrl: string }) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [guests, setGuests] = useState<Guest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [generatingAll, setGeneratingAll] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const fetchGuests = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from("guests")
+      .select("id, name, email, access_code, rsvp_status")
+      .eq("user_id", user.id)
+      .order("name");
+    
+    if (!error && data) {
+      setGuests(data);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchGuests();
+  }, [user]);
+
+  const generateCodeForGuest = async (guestId: string) => {
+    setGeneratingId(guestId);
+    try {
+      const { data: codeData, error: codeError } = await supabase.rpc('generate_access_code');
+      if (codeError) throw codeError;
+
+      const { error: updateError } = await supabase
+        .from("guests")
+        .update({ access_code: codeData })
+        .eq("id", guestId);
+
+      if (updateError) throw updateError;
+
+      setGuests(prev => prev.map(g => 
+        g.id === guestId ? { ...g, access_code: codeData } : g
+      ));
+
+      toast({
+        title: "Kod genererad",
+        description: "Gästkoden har skapats.",
+      });
+    } catch (error) {
+      console.error("Error generating code:", error);
+      toast({
+        title: "Fel",
+        description: "Kunde inte generera kod.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingId(null);
+    }
+  };
+
+  const generateAllCodes = async () => {
+    const guestsWithoutCodes = guests.filter(g => !g.access_code);
+    if (guestsWithoutCodes.length === 0) {
+      toast({
+        title: "Alla har koder",
+        description: "Alla gäster har redan en åtkomstkod.",
+      });
+      return;
+    }
+
+    setGeneratingAll(true);
+    try {
+      for (const guest of guestsWithoutCodes) {
+        const { data: codeData, error: codeError } = await supabase.rpc('generate_access_code');
+        if (codeError) throw codeError;
+
+        const { error: updateError } = await supabase
+          .from("guests")
+          .update({ access_code: codeData })
+          .eq("id", guest.id);
+
+        if (updateError) throw updateError;
+
+        setGuests(prev => prev.map(g => 
+          g.id === guest.id ? { ...g, access_code: codeData } : g
+        ));
+      }
+
+      toast({
+        title: "Klart!",
+        description: `${guestsWithoutCodes.length} koder har genererats.`,
+      });
+    } catch (error) {
+      console.error("Error generating codes:", error);
+      toast({
+        title: "Fel",
+        description: "Kunde inte generera alla koder.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingAll(false);
+    }
+  };
+
+  const copyGuestLink = (guest: Guest) => {
+    if (!guest.access_code) return;
+    const link = `${websiteUrl}?code=${guest.access_code}`;
+    navigator.clipboard.writeText(link);
+    setCopiedId(guest.id);
+    setTimeout(() => setCopiedId(null), 2000);
+    toast({
+      title: "Kopierad!",
+      description: "Länken med gästkod har kopierats.",
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-pulse text-muted-foreground">Laddar gäster...</div>
+      </div>
+    );
+  }
+
+  if (guests.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted flex items-center justify-center">
+          <Users className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h3 className="font-medium text-foreground mb-2">Inga gäster än</h3>
+        <p className="text-sm text-muted-foreground">
+          Lägg till gäster i gästlistan för att kunna generera åtkomstkoder.
+        </p>
+      </div>
+    );
+  }
+
+  const guestsWithCodes = guests.filter(g => g.access_code);
+  const guestsWithoutCodes = guests.filter(g => !g.access_code);
+
+  return (
+    <div className="space-y-6">
+      {/* Header with stats */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="font-serif text-lg font-medium text-foreground">Gästernas åtkomstkoder</h3>
+          <p className="text-sm text-muted-foreground">
+            {guestsWithCodes.length} av {guests.length} gäster har en kod
+          </p>
+        </div>
+        
+        {guestsWithoutCodes.length > 0 && (
+          <Button 
+            onClick={generateAllCodes} 
+            disabled={generatingAll}
+            className="gap-2"
+          >
+            {generatingAll ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <KeyRound className="w-4 h-4" />
+            )}
+            Generera alla koder ({guestsWithoutCodes.length})
+          </Button>
+        )}
+      </div>
+
+      {/* Guest list */}
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="grid grid-cols-[1fr,auto,auto] sm:grid-cols-[1fr,1fr,auto,auto] gap-4 p-3 bg-muted/50 text-sm font-medium text-muted-foreground border-b border-border">
+          <div>Gäst</div>
+          <div className="hidden sm:block">Kod</div>
+          <div>Status</div>
+          <div>Åtgärd</div>
+        </div>
+        
+        <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
+          {guests.map((guest) => (
+            <div 
+              key={guest.id}
+              className="grid grid-cols-[1fr,auto,auto] sm:grid-cols-[1fr,1fr,auto,auto] gap-4 p-3 items-center hover:bg-muted/30 transition-colors"
+            >
+              <div>
+                <div className="font-medium text-foreground">{guest.name}</div>
+                {guest.email && (
+                  <div className="text-xs text-muted-foreground">{guest.email}</div>
+                )}
+                {guest.access_code && (
+                  <div className="sm:hidden text-xs font-mono text-primary mt-1">
+                    {guest.access_code}
+                  </div>
+                )}
+              </div>
+              
+              <div className="hidden sm:block">
+                {guest.access_code ? (
+                  <span className="font-mono text-sm text-primary bg-primary/10 px-2 py-1 rounded">
+                    {guest.access_code}
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
+              </div>
+              
+              <div>
+                <span className={cn(
+                  "text-xs px-2 py-1 rounded-full",
+                  guest.rsvp_status === 'confirmed' && "bg-primary/10 text-primary",
+                  guest.rsvp_status === 'declined' && "bg-destructive/10 text-destructive",
+                  guest.rsvp_status === 'pending' && "bg-muted text-muted-foreground"
+                )}>
+                  {guest.rsvp_status === 'confirmed' ? 'Ja' : 
+                   guest.rsvp_status === 'declined' ? 'Nej' : 'Väntar'}
+                </span>
+              </div>
+              
+              <div className="flex gap-1">
+                {guest.access_code ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyGuestLink(guest)}
+                    className="gap-1.5 h-8"
+                  >
+                    {copiedId === guest.id ? (
+                      <Check className="w-3.5 h-3.5" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {copiedId === guest.id ? "Kopierad" : "Kopiera länk"}
+                    </span>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => generateCodeForGuest(guest.id)}
+                    disabled={generatingId === guest.id}
+                    className="gap-1.5 h-8"
+                  >
+                    {generatingId === guest.id ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <KeyRound className="w-3.5 h-3.5" />
+                    )}
+                    <span className="hidden sm:inline">Generera</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Info box */}
+      <div className="bg-muted/50 rounded-xl p-4 text-sm text-muted-foreground">
+        <p className="flex items-start gap-2">
+          <KeyRound className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <span>
+            Varje gäst får en unik kod som de använder för att komma åt er bröllopshemsida 
+            och svara på inbjudan. Skriv koden på inbjudningskorten eller skicka länken via e-post.
+          </span>
+        </p>
+      </div>
     </div>
   );
 }
