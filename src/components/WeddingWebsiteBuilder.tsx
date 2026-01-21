@@ -159,31 +159,31 @@ export function WeddingWebsiteBuilder() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-card rounded-2xl p-6 border border-border"
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Globe className="w-6 h-6 text-primary" />
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <div>
-              <h2 className="font-serif text-xl font-medium text-foreground">
+            <div className="min-w-0 flex-1">
+              <h2 className="font-serif text-lg sm:text-xl font-medium text-foreground">
                 Er bröllopshemsida
               </h2>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Link2 className="w-4 h-4" />
-                <span className="truncate max-w-[200px] md:max-w-none">{websiteUrl}</span>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                <Link2 className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">{websiteUrl}</span>
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleCopyLink}
-              className="gap-2"
+              className="gap-1.5 text-xs sm:text-sm h-8 sm:h-9"
             >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? "Kopierad!" : "Kopiera länk"}
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              <span className="hidden xs:inline">{copied ? "Kopierad!" : "Kopiera"}</span>
             </Button>
             
             <a 
@@ -192,18 +192,18 @@ export function WeddingWebsiteBuilder() {
               rel="noopener noreferrer"
               className="inline-flex"
             >
-              <Button variant="outline" size="sm" className="gap-2">
-                <ExternalLink className="w-4 h-4" />
-                Förhandsgranska
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm h-8 sm:h-9">
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">Visa</span>
               </Button>
             </a>
             
-            <div className="flex items-center gap-2 pl-3 border-l border-border">
+            <div className="flex items-center gap-2 ml-auto">
               <Switch
                 checked={website.is_published}
                 onCheckedChange={togglePublish}
               />
-              <span className="text-sm font-medium">
+              <span className="text-xs sm:text-sm font-medium">
                 {website.is_published ? "Publicerad" : "Utkast"}
               </span>
             </div>
@@ -219,63 +219,69 @@ export function WeddingWebsiteBuilder() {
         className="bg-card rounded-2xl border border-border overflow-hidden"
       >
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="border-b border-border px-6 pt-4">
-            <TabsList className="bg-transparent gap-1 p-0">
-              <TabsTrigger value="info" className="gap-2 data-[state=active]:bg-primary/10">
-                <Heart className="w-4 h-4" />
-                Information
+          <div className="border-b border-border px-3 sm:px-6 pt-3 sm:pt-4 overflow-x-auto">
+            <TabsList className="bg-transparent gap-0.5 sm:gap-1 p-0 w-max min-w-full sm:w-auto">
+              <TabsTrigger value="info" className="gap-1 sm:gap-2 data-[state=active]:bg-primary/10 px-2 sm:px-3 text-xs sm:text-sm">
+                <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Information</span>
+                <span className="sm:hidden">Info</span>
               </TabsTrigger>
-              <TabsTrigger value="design" className="gap-2 data-[state=active]:bg-primary/10">
-                <Palette className="w-4 h-4" />
+              <TabsTrigger value="design" className="gap-1 sm:gap-2 data-[state=active]:bg-primary/10 px-2 sm:px-3 text-xs sm:text-sm">
+                <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Design
               </TabsTrigger>
-              <TabsTrigger value="photos" className="gap-2 data-[state=active]:bg-primary/10">
-                <Image className="w-4 h-4" />
-                Bildgalleri
+              <TabsTrigger value="photos" className="gap-1 sm:gap-2 data-[state=active]:bg-primary/10 px-2 sm:px-3 text-xs sm:text-sm">
+                <Image className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Bildgalleri</span>
+                <span className="sm:hidden">Bilder</span>
               </TabsTrigger>
-              <TabsTrigger value="content" className="gap-2 data-[state=active]:bg-primary/10">
-                <FileText className="w-4 h-4" />
-                Innehåll
+              <TabsTrigger value="content" className="gap-1 sm:gap-2 data-[state=active]:bg-primary/10 px-2 sm:px-3 text-xs sm:text-sm">
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Innehåll</span>
+                <span className="sm:hidden">Text</span>
               </TabsTrigger>
-              <TabsTrigger value="guestcodes" className="gap-2 data-[state=active]:bg-primary/10">
-                <KeyRound className="w-4 h-4" />
-                Gästkoder
+              <TabsTrigger value="guestcodes" className="gap-1 sm:gap-2 data-[state=active]:bg-primary/10 px-2 sm:px-3 text-xs sm:text-sm">
+                <KeyRound className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Gästkoder</span>
+                <span className="sm:hidden">Koder</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <div className="p-6">
-            <TabsContent value="info" className="mt-0 space-y-6">
+          <div className="p-4 sm:p-6">
+            <TabsContent value="info" className="mt-0 space-y-4 sm:space-y-6">
               {/* Couple Info */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <Label htmlFor="couple_names">Era namn</Label>
+                    <Label htmlFor="couple_names" className="text-sm">Era namn</Label>
                     <Input
                       id="couple_names"
                       placeholder="Anna & Erik"
                       value={formData.couple_names || ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, couple_names: e.target.value }))}
+                      className="mt-1"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="couple_description">Om oss (kort beskrivning)</Label>
+                    <Label htmlFor="couple_description" className="text-sm">Om oss (kort beskrivning)</Label>
                     <Textarea
                       id="couple_description"
                       placeholder="Berätta lite om er själva..."
                       rows={4}
                       value={formData.couple_description || ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, couple_description: e.target.value }))}
+                      className="mt-1"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <Label>Parets foto</Label>
+                  <Label className="text-sm">Parets foto</Label>
                   <div 
                     onClick={() => couplePhotoRef.current?.click()}
                     className={cn(
-                      "mt-2 border-2 border-dashed border-border rounded-xl h-48 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden",
+                      "mt-1 sm:mt-2 border-2 border-dashed border-border rounded-xl h-40 sm:h-48 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden",
                       formData.couple_photo_url && "border-solid border-primary/20"
                     )}
                   >
@@ -287,8 +293,8 @@ export function WeddingWebsiteBuilder() {
                       />
                     ) : (
                       <div className="text-center text-muted-foreground">
-                        <Upload className="w-8 h-8 mx-auto mb-2" />
-                        <p className="text-sm">Klicka för att ladda upp</p>
+                        <Upload className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2" />
+                        <p className="text-xs sm:text-sm">Klicka för att ladda upp</p>
                       </div>
                     )}
                   </div>
@@ -303,82 +309,88 @@ export function WeddingWebsiteBuilder() {
               </div>
 
               {/* Wedding Details */}
-              <div className="pt-6 border-t border-border">
-                <h3 className="font-serif text-lg font-medium text-foreground mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-primary" />
+              <div className="pt-4 sm:pt-6 border-t border-border">
+                <h3 className="font-serif text-base sm:text-lg font-medium text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   Bröllopsdetaljer
                 </h3>
                 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <Label htmlFor="wedding_date">Bröllopsdatum</Label>
+                    <Label htmlFor="wedding_date" className="text-sm">Bröllopsdatum</Label>
                     <Input
                       id="wedding_date"
                       type="date"
                       value={formData.wedding_date || profile?.wedding_date || ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, wedding_date: e.target.value }))}
+                      className="mt-1"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="ceremony_time">Tid för vigsel</Label>
+                    <Label htmlFor="ceremony_time" className="text-sm">Tid för vigsel</Label>
                     <Input
                       id="ceremony_time"
                       type="time"
                       value={formData.ceremony_time || ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, ceremony_time: e.target.value }))}
+                      className="mt-1"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Locations */}
-              <div className="pt-6 border-t border-border">
-                <h3 className="font-serif text-lg font-medium text-foreground mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-primary" />
+              <div className="pt-4 sm:pt-6 border-t border-border">
+                <h3 className="font-serif text-base sm:text-lg font-medium text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   Platser
                 </h3>
                 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-3 sm:space-y-4">
                     <h4 className="text-sm font-medium text-foreground">Vigsel</h4>
                     <div>
-                      <Label htmlFor="ceremony_location">Platsnamn</Label>
+                      <Label htmlFor="ceremony_location" className="text-sm">Platsnamn</Label>
                       <Input
                         id="ceremony_location"
                         placeholder="T.ex. Stockholms Stadshus"
                         value={formData.ceremony_location || ""}
                         onChange={(e) => setFormData(prev => ({ ...prev, ceremony_location: e.target.value }))}
+                        className="mt-1"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="ceremony_address">Adress</Label>
+                      <Label htmlFor="ceremony_address" className="text-sm">Adress</Label>
                       <Input
                         id="ceremony_address"
                         placeholder="Hantverkargatan 1, Stockholm"
                         value={formData.ceremony_address || ""}
                         onChange={(e) => setFormData(prev => ({ ...prev, ceremony_address: e.target.value }))}
+                        className="mt-1"
                       />
                     </div>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <h4 className="text-sm font-medium text-foreground">Fest</h4>
                     <div>
-                      <Label htmlFor="reception_location">Platsnamn</Label>
+                      <Label htmlFor="reception_location" className="text-sm">Platsnamn</Label>
                       <Input
                         id="reception_location"
                         placeholder="T.ex. Grand Hôtel"
                         value={formData.reception_location || ""}
                         onChange={(e) => setFormData(prev => ({ ...prev, reception_location: e.target.value }))}
+                        className="mt-1"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="reception_address">Adress</Label>
+                      <Label htmlFor="reception_address" className="text-sm">Adress</Label>
                       <Input
                         id="reception_address"
                         placeholder="Södra Blasieholmshamnen 8, Stockholm"
                         value={formData.reception_address || ""}
                         onChange={(e) => setFormData(prev => ({ ...prev, reception_address: e.target.value }))}
+                        className="mt-1"
                       />
                     </div>
                   </div>
@@ -386,69 +398,69 @@ export function WeddingWebsiteBuilder() {
               </div>
             </TabsContent>
 
-            <TabsContent value="design" className="mt-0 space-y-6">
+            <TabsContent value="design" className="mt-0 space-y-4 sm:space-y-6">
               {/* Theme Selection */}
               <div>
-                <Label className="text-base">Välj tema</Label>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3">
+                <Label className="text-sm sm:text-base">Välj tema</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mt-2 sm:mt-3">
                   {THEMES.map((theme) => (
                     <button
                       key={theme.id}
                       onClick={() => setFormData(prev => ({ ...prev, theme: theme.id }))}
                       className={cn(
-                        "p-4 rounded-xl border-2 text-left transition-all hover-lift",
+                        "p-2.5 sm:p-4 rounded-xl border-2 text-left transition-all hover-lift",
                         (formData.theme || website.theme) === theme.id
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                       )}
                     >
-                      <div className="font-medium text-foreground mb-1">{theme.name}</div>
-                      <div className="text-xs text-muted-foreground">{theme.description}</div>
+                      <div className="font-medium text-foreground text-sm sm:text-base mb-0.5 sm:mb-1">{theme.name}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-1">{theme.description}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Color Presets */}
-              <div className="pt-6 border-t border-border">
-                <Label className="text-base">Färgpalett</Label>
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mt-3">
+              <div className="pt-4 sm:pt-6 border-t border-border">
+                <Label className="text-sm sm:text-base">Färgpalett</Label>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3 mt-2 sm:mt-3">
                   {COLOR_PRESETS.map((preset) => (
                     <button
                       key={preset.name}
                       onClick={() => handleColorPreset(preset)}
                       className={cn(
-                        "p-3 rounded-xl border-2 transition-all hover-lift",
+                        "p-2 sm:p-3 rounded-xl border-2 transition-all hover-lift",
                         formData.primary_color === preset.primary
                           ? "border-primary"
                           : "border-border hover:border-primary/50"
                       )}
                     >
-                      <div className="flex gap-1 mb-2">
+                      <div className="flex gap-0.5 sm:gap-1 mb-1 sm:mb-2">
                         <div 
-                          className="w-6 h-6 rounded-full" 
+                          className="w-4 h-4 sm:w-6 sm:h-6 rounded-full" 
                           style={{ backgroundColor: preset.primary }}
                         />
                         <div 
-                          className="w-6 h-6 rounded-full" 
+                          className="w-4 h-4 sm:w-6 sm:h-6 rounded-full" 
                           style={{ backgroundColor: preset.secondary }}
                         />
                       </div>
-                      <div className="text-xs font-medium text-foreground">{preset.name}</div>
+                      <div className="text-[10px] sm:text-xs font-medium text-foreground truncate">{preset.name}</div>
                     </button>
                   ))}
                 </div>
                 
-                <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4">
                   <div>
-                    <Label htmlFor="primary_color">Primär färg</Label>
+                    <Label htmlFor="primary_color" className="text-sm">Primär färg</Label>
                     <div className="flex gap-2 mt-1">
                       <Input
                         id="primary_color"
                         type="color"
                         value={formData.primary_color || "#D4A574"}
                         onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
-                        className="w-12 h-10 p-1 cursor-pointer"
+                        className="w-10 h-9 sm:w-12 sm:h-10 p-1 cursor-pointer"
                       />
                       <Input
                         value={formData.primary_color || "#D4A574"}
@@ -458,14 +470,14 @@ export function WeddingWebsiteBuilder() {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="secondary_color">Sekundär färg</Label>
+                    <Label htmlFor="secondary_color" className="text-sm">Sekundär färg</Label>
                     <div className="flex gap-2 mt-1">
                       <Input
                         id="secondary_color"
                         type="color"
                         value={formData.secondary_color || "#8B7355"}
                         onChange={(e) => setFormData(prev => ({ ...prev, secondary_color: e.target.value }))}
-                        className="w-12 h-10 p-1 cursor-pointer"
+                        className="w-10 h-9 sm:w-12 sm:h-10 p-1 cursor-pointer"
                       />
                       <Input
                         value={formData.secondary_color || "#8B7355"}
@@ -478,45 +490,46 @@ export function WeddingWebsiteBuilder() {
               </div>
 
               {/* Font Selection */}
-              <div className="pt-6 border-t border-border">
-                <Label className="text-base">Typsnitt</Label>
-                <div className="grid grid-cols-3 gap-3 mt-3">
+              <div className="pt-4 sm:pt-6 border-t border-border">
+                <Label className="text-sm sm:text-base">Typsnitt</Label>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2 sm:mt-3">
                   {FONTS.map((font) => (
                     <button
                       key={font.id}
                       onClick={() => setFormData(prev => ({ ...prev, font_family: font.id }))}
                       className={cn(
-                        "p-4 rounded-xl border-2 text-left transition-all",
+                        "p-2.5 sm:p-4 rounded-xl border-2 text-left transition-all",
                         (formData.font_family || website.font_family) === font.id
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                       )}
                     >
                       <div 
-                        className="text-xl mb-1 text-foreground"
+                        className="text-lg sm:text-xl mb-0.5 sm:mb-1 text-foreground"
                         style={{ fontFamily: font.preview }}
                       >
                         Aa
                       </div>
-                      <div className="text-sm font-medium text-foreground">{font.name}</div>
+                      <div className="text-xs sm:text-sm font-medium text-foreground">{font.name}</div>
                     </button>
                   ))}
                 </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="photos" className="mt-0 space-y-6">
+            <TabsContent value="photos" className="mt-0 space-y-4 sm:space-y-6">
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <Label className="text-base">Bildgalleri</Label>
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <Label className="text-sm sm:text-base">Bildgalleri</Label>
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={() => fileInputRef.current?.click()}
-                    className="gap-2"
+                    className="gap-1.5 text-xs sm:text-sm h-8 sm:h-9"
                   >
-                    <Plus className="w-4 h-4" />
-                    Lägg till bilder
+                    <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden xs:inline">Lägg till bilder</span>
+                    <span className="xs:hidden">Lägg till</span>
                   </Button>
                 </div>
                 
@@ -532,56 +545,65 @@ export function WeddingWebsiteBuilder() {
                 {photos.length === 0 ? (
                   <div 
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-border rounded-xl p-12 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                    className="border-2 border-dashed border-border rounded-xl p-8 sm:p-12 text-center cursor-pointer hover:border-primary/50 transition-colors"
                   >
-                    <Image className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                      Klicka för att ladda upp bilder till ert galleri
+                    <Image className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Klicka för att ladda upp bilder
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
                     {photos.map((photo) => (
                       <div 
                         key={photo.id} 
-                        className="relative group rounded-xl overflow-hidden aspect-square"
+                        className="relative group rounded-lg sm:rounded-xl overflow-hidden aspect-square"
                       >
                         <img 
                           src={photo.photo_url} 
                           alt={photo.caption || "Bröllopsbild"} 
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Button
                             variant="destructive"
                             size="icon"
+                            className="h-8 w-8 sm:h-10 sm:w-10"
                             onClick={() => removePhoto(photo.id)}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </Button>
                         </div>
+                        {/* Mobile delete button always visible */}
+                        <button
+                          onClick={() => removePhoto(photo.id)}
+                          className="sm:hidden absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1.5"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
                       </div>
                     ))}
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="aspect-square rounded-xl border-2 border-dashed border-border flex items-center justify-center hover:border-primary/50 transition-colors"
+                      className="aspect-square rounded-lg sm:rounded-xl border-2 border-dashed border-border flex items-center justify-center hover:border-primary/50 transition-colors"
                     >
-                      <Plus className="w-8 h-8 text-muted-foreground" />
+                      <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
                     </button>
                   </div>
                 )}
               </div>
             </TabsContent>
 
-            <TabsContent value="content" className="mt-0 space-y-6">
+            <TabsContent value="content" className="mt-0 space-y-4 sm:space-y-6">
               <div>
-                <Label htmlFor="our_story">Vår historia</Label>
+                <Label htmlFor="our_story" className="text-sm">Vår historia</Label>
                 <Textarea
                   id="our_story"
                   placeholder="Berätta hur ni träffades, hur ni blev förlovade..."
-                  rows={6}
+                  rows={5}
                   value={formData.our_story || ""}
                   onChange={(e) => setFormData(prev => ({ ...prev, our_story: e.target.value }))}
+                  className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Dela er kärlekshistoria med gästerna
@@ -589,13 +611,14 @@ export function WeddingWebsiteBuilder() {
               </div>
 
               <div>
-                <Label htmlFor="additional_info">Praktisk information</Label>
+                <Label htmlFor="additional_info" className="text-sm">Praktisk information</Label>
                 <Textarea
                   id="additional_info"
                   placeholder="Information om boende, transport, klädkod, önskelista..."
-                  rows={6}
+                  rows={5}
                   value={formData.additional_info || ""}
                   onChange={(e) => setFormData(prev => ({ ...prev, additional_info: e.target.value }))}
+                  className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Allt gästerna behöver veta
@@ -609,11 +632,11 @@ export function WeddingWebsiteBuilder() {
           </div>
 
           {/* Save Button */}
-          <div className="border-t border-border p-6 flex justify-end">
+          <div className="border-t border-border p-4 sm:p-6 flex justify-end">
             <Button 
               onClick={handleSave} 
               disabled={isSaving}
-              className="gap-2"
+              className="gap-1.5 sm:gap-2 w-full sm:w-auto"
             >
               <Save className="w-4 h-4" />
               {isSaving ? "Sparar..." : "Spara ändringar"}
