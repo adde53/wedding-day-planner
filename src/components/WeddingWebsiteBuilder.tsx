@@ -4,8 +4,9 @@ import {
   Globe, Eye, EyeOff, Save, Upload, Trash2, Plus, 
   Palette, Type, Calendar, MapPin, Heart, Image, 
   FileText, Link2, Copy, Check, ExternalLink, Settings2,
-  Users, KeyRound, RefreshCw
+  Users, KeyRound, RefreshCw, QrCode, Download, X
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -641,6 +642,7 @@ function GuestCodesSection({ websiteUrl }: { websiteUrl: string }) {
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [generatingAll, setGeneratingAll] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [qrGuest, setQrGuest] = useState<Guest | null>(null);
 
   const fetchGuests = async () => {
     if (!user) return;
@@ -853,21 +855,34 @@ function GuestCodesSection({ websiteUrl }: { websiteUrl: string }) {
               
               <div className="flex gap-1">
                 {guest.access_code ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyGuestLink(guest)}
-                    className="gap-1.5 h-8"
-                  >
-                    {copiedId === guest.id ? (
-                      <Check className="w-3.5 h-3.5" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                    <span className="hidden sm:inline">
-                      {copiedId === guest.id ? "Kopierad" : "Kopiera länk"}
-                    </span>
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyGuestLink(guest)}
+                      className="gap-1.5 h-8"
+                      title="Kopiera länk"
+                    >
+                      {copiedId === guest.id ? (
+                        <Check className="w-3.5 h-3.5" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                      <span className="hidden sm:inline">
+                        {copiedId === guest.id ? "Kopierad" : "Länk"}
+                      </span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setQrGuest(guest)}
+                      className="gap-1.5 h-8"
+                      title="Visa QR-kod"
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">QR</span>
+                    </Button>
+                  </>
                 ) : (
                   <Button
                     variant="outline"
@@ -900,6 +915,103 @@ function GuestCodesSection({ websiteUrl }: { websiteUrl: string }) {
           </span>
         </p>
       </div>
+
+      {/* QR Code Modal */}
+      <AnimatePresence>
+        {qrGuest && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setQrGuest(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-serif text-lg font-medium text-foreground">
+                  QR-kod för {qrGuest.name}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setQrGuest(null)}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl flex items-center justify-center mb-4">
+                <QRCodeSVG
+                  value={`${websiteUrl}?code=${qrGuest.access_code}`}
+                  size={200}
+                  level="M"
+                  includeMargin={false}
+                />
+              </div>
+
+              <div className="text-center mb-4">
+                <p className="text-sm text-muted-foreground mb-1">Kod:</p>
+                <p className="font-mono text-xl text-primary font-medium">
+                  {qrGuest.access_code}
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 gap-2"
+                  onClick={() => {
+                    const link = `${websiteUrl}?code=${qrGuest.access_code}`;
+                    navigator.clipboard.writeText(link);
+                    toast({
+                      title: "Kopierad!",
+                      description: "Länken har kopierats.",
+                    });
+                  }}
+                >
+                  <Copy className="w-4 h-4" />
+                  Kopiera länk
+                </Button>
+                <Button
+                  className="flex-1 gap-2"
+                  onClick={() => {
+                    const svg = document.querySelector('.bg-white.p-6 svg') as SVGElement;
+                    if (!svg) return;
+                    
+                    const svgData = new XMLSerializer().serializeToString(svg);
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new window.Image();
+                    
+                    img.onload = () => {
+                      canvas.width = img.width;
+                      canvas.height = img.height;
+                      ctx?.drawImage(img, 0, 0);
+                      const pngUrl = canvas.toDataURL('image/png');
+                      const downloadLink = document.createElement('a');
+                      downloadLink.href = pngUrl;
+                      downloadLink.download = `qr-${qrGuest.name.replace(/\s+/g, '-').toLowerCase()}.png`;
+                      downloadLink.click();
+                    };
+                    
+                    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                  }}
+                >
+                  <Download className="w-4 h-4" />
+                  Ladda ner
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
