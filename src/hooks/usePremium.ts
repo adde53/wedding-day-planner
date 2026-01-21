@@ -31,41 +31,39 @@ export function usePremium() {
         setIsPremium(true);
         setIsTrialActive(false);
         setIsLoading(false);
-        // Also save to localStorage as backup
-        localStorage.setItem(`premium_${user.id}`, "true");
         return;
       }
     } catch (e) {
-      console.log("Could not check Stripe premium status, falling back to local");
+      console.log("Could not check Stripe premium status, falling back to database");
     }
 
-    // Check for local premium status (backup)
-    const storedPremium = localStorage.getItem(`premium_${user.id}`);
-    if (storedPremium === "true") {
-      setIsPremium(true);
-      setIsTrialActive(false);
-      setIsLoading(false);
-      return;
-    }
+    // Check for active trial from database
+    try {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("trial_started_at")
+        .eq("user_id", user.id)
+        .single();
 
-    // Check for active trial
-    const trialStartStr = localStorage.getItem(`premium_trial_start_${user.id}`);
-    if (trialStartStr) {
-      const trialStart = new Date(trialStartStr);
-      const now = new Date();
-      const diffTime = now.getTime() - trialStart.getTime();
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      const daysLeft = TRIAL_DURATION_DAYS - diffDays;
+      if (!error && profile?.trial_started_at) {
+        const trialStart = new Date(profile.trial_started_at);
+        const now = new Date();
+        const diffTime = now.getTime() - trialStart.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const daysLeft = TRIAL_DURATION_DAYS - diffDays;
 
-      if (daysLeft > 0) {
-        setIsPremium(true);
-        setIsTrialActive(true);
-        setTrialDaysLeft(daysLeft);
-      } else {
-        setIsPremium(false);
-        setIsTrialActive(false);
-        setTrialDaysLeft(0);
+        if (daysLeft > 0) {
+          setIsPremium(true);
+          setIsTrialActive(true);
+          setTrialDaysLeft(daysLeft);
+        } else {
+          setIsPremium(false);
+          setIsTrialActive(false);
+          setTrialDaysLeft(0);
+        }
       }
+    } catch (e) {
+      console.log("Could not check trial status from database");
     }
 
     setIsLoading(false);
@@ -117,8 +115,6 @@ export function usePremium() {
       if (error) throw error;
       
       if (data?.url) {
-        // Use direct assignment to avoid popup blockers
-        // This replaces the current page with Stripe checkout
         window.location.assign(data.url);
       } else {
         throw new Error("No checkout URL received");
@@ -132,36 +128,95 @@ export function usePremium() {
         variant: "destructive",
       });
     }
-    // Note: Don't reset isProcessingPayment on success since we're navigating away
   };
 
   const activatePremium = () => {
-    // This now initiates Stripe payment
     initiatePayment();
   };
 
-  const startTrial = () => {
-    if (user) {
-      const hasUsedTrial = localStorage.getItem(`premium_trial_used_${user.id}`);
-      if (hasUsedTrial) {
+  const startTrial = async () => {
+    if (!user) return false;
+
+    // Check if trial has already been used (from database)
+    try {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("trial_started_at")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error checking trial status:", error);
         return false;
       }
-      
-      localStorage.setItem(`premium_trial_start_${user.id}`, new Date().toISOString());
-      localStorage.setItem(`premium_trial_used_${user.id}`, "true");
+
+      // If trial already started, don't allow restart
+      if (profile?.trial_started_at) {
+        toast({
+          title: "Provperiod redan använd",
+          description: "Du har redan använt din gratis provperiod.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Start trial by saving to database
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ trial_started_at: new Date().toISOString() })
+        .eq("user_id", user.id);
+
+      if (updateError) {
+        console.error("Error starting trial:", updateError);
+        toast({
+          title: "Något gick fel",
+          description: "Kunde inte starta provperioden. Försök igen.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       setIsPremium(true);
       setIsTrialActive(true);
       setTrialDaysLeft(TRIAL_DURATION_DAYS);
+      
       toast({
         title: "Provperiod startad! 🎉",
         description: "Du har nu 7 dagars gratis tillgång till alla Premium-funktioner.",
       });
+      
       return true;
+    } catch (e) {
+      console.error("Error in startTrial:", e);
+      return false;
     }
-    return false;
   };
 
-  const hasUsedTrial = user ? localStorage.getItem(`premium_trial_used_${user.id}`) === "true" : false;
+  // Check if trial has been used (async, but provide sync fallback for UI)
+  const [hasUsedTrial, setHasUsedTrial] = useState(false);
+  
+  useEffect(() => {
+    const checkTrialUsed = async () => {
+      if (!user) {
+        setHasUsedTrial(false);
+        return;
+      }
+      
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("trial_started_at")
+          .eq("user_id", user.id)
+          .single();
+        
+        setHasUsedTrial(!!profile?.trial_started_at);
+      } catch {
+        setHasUsedTrial(false);
+      }
+    };
+    
+    checkTrialUsed();
+  }, [user, isTrialActive]);
 
   return { 
     isPremium, 

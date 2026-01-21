@@ -138,6 +138,7 @@ export type Database = {
           full_name: string | null
           id: string
           partner_name: string | null
+          trial_started_at: string | null
           updated_at: string
           user_id: string
           wedding_date: string | null
@@ -148,6 +149,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           partner_name?: string | null
+          trial_started_at?: string | null
           updated_at?: string
           user_id: string
           wedding_date?: string | null
@@ -158,6 +160,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           partner_name?: string | null
+          trial_started_at?: string | null
           updated_at?: string
           user_id?: string
           wedding_date?: string | null
