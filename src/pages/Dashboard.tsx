@@ -167,7 +167,7 @@ export default function Dashboard() {
                     Gästlista
                   </h3>
                   <p className="text-muted-foreground text-sm">
-                    {guestStats.confirmed} av {guestStats.total} bekräftade
+                    {(guestStats.confirmed + guestStats.declined)} svar av {guestStats.total} inbjudna
                   </p>
                 </motion.button>
 
@@ -425,6 +425,13 @@ export default function Dashboard() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Hidden guest stats loader: fetch stats even when not on Gäster tab */}
+        {activeTab !== "guests" && (
+          <div className="hidden" aria-hidden>
+            <GuestList onGuestStatsChange={handleGuestStatsChange} />
+          </div>
+        )}
       </main>
 
       {/* Footer */}
