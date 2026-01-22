@@ -94,6 +94,11 @@ export default function Landing() {
               </span>
             </Link>
             <div className="flex items-center gap-4">
+              <Link to="/brollopsinfo" className="hidden md:block">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                  Bröllopskostnader
+                </Button>
+              </Link>
               <Link to="/guider" className="hidden sm:block">
                 <Button variant="outline" className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2">
                   <Lightbulb className="w-4 h-4" />
@@ -401,6 +406,9 @@ export default function Landing() {
               </span>
             </div>
             <div className="flex items-center gap-6">
+              <Link to="/brollopsinfo" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Bröllopskostnader
+              </Link>
               <Link to="/guider" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Guider & Tips
               </Link>
