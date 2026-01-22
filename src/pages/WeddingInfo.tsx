@@ -339,7 +339,7 @@ const WeddingInfo = () => {
               Komplett guide till bröllopskostnader
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium text-foreground mb-6 leading-tight">
-              Vad kostar ett bröllop i Sverige 2024?
+              Vad kostar ett bröllop i Sverige 2026?
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Allt du behöver veta om bröllopskostnader, budget, planering och hur du skapar ditt drömbroröllop utan att spräcka plånboken.
