@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Heart, Mail, Lock, User, ArrowRight, Sparkles, ArrowLeft } from "lucide-react";
@@ -17,14 +17,25 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  
+  // Get redirect tab from URL params
+  const redirectTab = searchParams.get("redirect");
+  
+  const getRedirectUrl = () => {
+    if (redirectTab) {
+      return `/dashboard?tab=${redirectTab}`;
+    }
+    return "/dashboard";
+  };
 
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
-      navigate("/dashboard");
+      navigate(getRedirectUrl());
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, redirectTab]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +74,7 @@ export default function Auth() {
           title: "Välkommen tillbaka!",
           description: "Du är nu inloggad.",
         });
-        navigate("/dashboard");
+        navigate(getRedirectUrl());
       } else if (mode === "signup") {
         const { error } = await signUp(email, password, fullName);
         if (error) throw error;
@@ -71,7 +82,7 @@ export default function Auth() {
           title: "Konto skapat!",
           description: "Välkommen till MittBröllop.se.",
         });
-        navigate("/dashboard");
+        navigate(getRedirectUrl());
       }
     } catch (error: any) {
       toast({
