@@ -33,7 +33,8 @@ const guides = [
     ],
     tip: "Lämna alltid lite extra i budgeten för oväntade utgifter.",
     cta: "Testa budgetkalkylatorn gratis",
-    ctaLink: "/auth"
+    ctaLink: "/auth?redirect=budget",
+    dashboardTab: "budget"
   },
   {
     id: "seating",
@@ -47,7 +48,8 @@ const guides = [
     ],
     tip: "Testa olika scenarion innan ni bestämmer slutgiltigt.",
     cta: "Prova bordsplaceraren",
-    ctaLink: "/auth"
+    ctaLink: "/auth?redirect=tables",
+    dashboardTab: "tables"
   },
   {
     id: "rsvp",
@@ -61,7 +63,8 @@ const guides = [
     ],
     tip: "Dela gästlistan med bröllopsteamet (t.ex. brudtärnor, familj) för enklare koordinering.",
     cta: "Hantera gästlistan online",
-    ctaLink: "/auth"
+    ctaLink: "/auth?redirect=guests",
+    dashboardTab: "guests"
   },
   {
     id: "food-drinks",
@@ -75,7 +78,8 @@ const guides = [
     ],
     tip: "Lämna alltid lite extra dryck för säkerhets skull – gäster gillar variation!",
     cta: "Prova dryckes- och matkalkylatorn",
-    ctaLink: "/auth"
+    ctaLink: "/auth?redirect=drinks",
+    dashboardTab: "drinks"
   },
   {
     id: "checklist",
@@ -90,7 +94,8 @@ const guides = [
     ],
     tip: "Ladda ner vår kompletta checklista för att följa steg-för-steg.",
     cta: "Ladda ner checklista gratis",
-    ctaLink: "/auth"
+    ctaLink: "/auth?redirect=checklist",
+    dashboardTab: "checklist"
   },
   {
     id: "website",
@@ -104,7 +109,8 @@ const guides = [
     ],
     tip: "Håll designen enkel och använd bilder från er förlovning eller tidigare events.",
     cta: "Skapa bröllopswebbplats gratis",
-    ctaLink: "/auth"
+    ctaLink: "/auth?redirect=website",
+    dashboardTab: "website"
   }
 ];
 

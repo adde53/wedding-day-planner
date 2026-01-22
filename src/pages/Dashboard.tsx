@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { usePremium } from "@/hooks/usePremium";
@@ -25,12 +25,25 @@ export default function Dashboard() {
   const { profile, updateWeddingDate } = useProfile();
   const { isPremium, activatePremium, startTrial, isTrialActive, trialDaysLeft, hasUsedTrial, isProcessingPayment } = usePremium();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("overview");
   const [completedTasks, setCompletedTasks] = useState(0);
   const [guestStats, setGuestStats] = useState({ confirmed: 0, declined: 0, pending: 0, total: 0 });
   const [premiumGateOpen, setPremiumGateOpen] = useState(false);
   const [premiumFeatureName, setPremiumFeatureName] = useState("");
   const totalTasks = 16;
+
+  // Read tab from URL params on mount
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    const validTabs = ["overview", "checklist", "guests", "tables", "budget", "timeline", "food", "drinks", "website", "settings"];
+    if (tabFromUrl && validTabs.includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+      // Clear the URL param after setting the tab
+      searchParams.delete("tab");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
 
   const handleGuestStatsChange = useCallback((confirmed: number, declined: number, pending: number, total: number) => {
     setGuestStats({ confirmed, declined, pending, total });
