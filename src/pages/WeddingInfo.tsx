@@ -22,7 +22,7 @@ import {
   Calendar,
   Globe,
   ArrowRight,
-  Lightbulb
+  Lightbulb,
 } from "lucide-react";
 
 const WeddingInfo = () => {
@@ -34,14 +34,16 @@ const WeddingInfo = () => {
       title: "Lokal & Venue",
       avgCost: "30 000 - 80 000 kr",
       percentage: "25-35%",
-      description: "Lokalkostnaden är ofta den största utgiften. Priset varierar kraftigt beroende på säsong, dag och typ av lokal.",
+      description:
+        "Lokalkostnaden är ofta den största utgiften. Priset varierar kraftigt beroende på säsong, dag och typ av lokal.",
       tips: [
         "Boka 12-18 månader i förväg för populära datum",
         "Fredagar och söndagar är ofta billigare än lördagar",
         "Vinter- och vårbröllopp kan ge betydande rabatter",
-        "Fråga om all-inclusive-paket som kan spara pengar"
+        "Fråga om all-inclusive-paket som kan spara pengar",
       ],
-      details: "En typisk festlokal i Stockholm kostar 15 000-50 000 kr, medan lantliga gårdar kan kosta 20 000-100 000 kr beroende på storlek och faciliteter."
+      details:
+        "En typisk festlokal i Stockholm kostar 15 000-50 000 kr, medan lantliga gårdar kan kosta 20 000-100 000 kr beroende på storlek och faciliteter.",
     },
     {
       icon: Utensils,
@@ -53,9 +55,10 @@ const WeddingInfo = () => {
         "Bufféer är ofta billigare än sittande middagar",
         "Välj säsongens råvaror för bättre priser",
         "Be om smakprovning innan ni bokar",
-        "Räkna med 10% extra för personalens mat"
+        "Räkna med 10% extra för personalens mat",
       ],
-      details: "En trerätters sittande middag kostar i snitt 600-900 kr per person. Lägg till 150-300 kr för fördrinks och kvällsmat."
+      details:
+        "En trerätters sittande middag kostar i snitt 600-900 kr per person. Lägg till 150-300 kr för fördrinks och kvällsmat.",
     },
     {
       icon: Wine,
@@ -67,9 +70,10 @@ const WeddingInfo = () => {
         "Köp dryck själva om lokalen tillåter",
         "Välj husviner istället för specifika märken",
         "Räkna med 1 flaska vin per 2 personer till middagen",
-        "Erbjud alkoholfria alternativ för alla"
+        "Erbjud alkoholfria alternativ för alla",
       ],
-      details: "Budget: 200 kr/person (öl, vin, läsk). Medium: 350 kr/person (cocktails, bättre viner). Premium: 500+ kr/person (champagne, premium spirits)."
+      details:
+        "Budget: 200 kr/person (öl, vin, läsk). Medium: 350 kr/person (cocktails, bättre viner). Premium: 500+ kr/person (champagne, premium spirits).",
     },
     {
       icon: Camera,
@@ -81,9 +85,10 @@ const WeddingInfo = () => {
         "Se igenom fotografens tidigare arbeten noggrant",
         "Fråga hur många redigerade bilder som ingår",
         "Överväg om ni vill ha video också",
-        "Boka populära fotografer 12+ månader i förväg"
+        "Boka populära fotografer 12+ månader i förväg",
       ],
-      details: "Halvdagsfotografering (4-6 timmar): 12 000-20 000 kr. Heldagsfotografering: 20 000-35 000 kr. Videograf: 15 000-30 000 kr extra."
+      details:
+        "Halvdagsfotografering (4-6 timmar): 12 000-20 000 kr. Heldagsfotografering: 20 000-35 000 kr. Videograf: 15 000-30 000 kr extra.",
     },
     {
       icon: Flower2,
@@ -95,9 +100,10 @@ const WeddingInfo = () => {
         "Välj säsongens blommor för bättre priser",
         "Återanvänd ceremonidekorationer på festen",
         "Överväg torkade blommor eller grönt",
-        "DIY-dekoration kan spara mycket pengar"
+        "DIY-dekoration kan spara mycket pengar",
       ],
-      details: "Brudbukett: 1 500-4 000 kr. Brudgummens corsage: 200-400 kr. Bordsdekoration: 300-800 kr per bord. Ceremoniblommor: 3 000-8 000 kr."
+      details:
+        "Brudbukett: 1 500-4 000 kr. Brudgummens corsage: 200-400 kr. Bordsdekoration: 300-800 kr per bord. Ceremoniblommor: 3 000-8 000 kr.",
     },
     {
       icon: Music,
@@ -109,9 +115,10 @@ const WeddingInfo = () => {
         "DJ är generellt billigare än liveband",
         "Be om att höra demo eller se live",
         "Diskutera låtval och stil i förväg",
-        "Boka duktiga band 8-12 månader i förväg"
+        "Boka duktiga band 8-12 månader i förväg",
       ],
-      details: "DJ (kväll): 8 000-15 000 kr. Liveband (3-5 pers): 20 000-45 000 kr. Ceremonimusiker: 3 000-8 000 kr. Kvällsunderhållning: 5 000-15 000 kr."
+      details:
+        "DJ (kväll): 8 000-15 000 kr. Liveband (3-5 pers): 20 000-45 000 kr. Ceremonimusiker: 3 000-8 000 kr. Kvällsunderhållning: 5 000-15 000 kr.",
     },
     {
       icon: Cake,
@@ -123,9 +130,10 @@ const WeddingInfo = () => {
         "Räkna med 1 bit per gäst + lite extra",
         "Fondanttårtor är ofta dyrare",
         "Överväg en mindre tårta + dessertbord",
-        "Beställ 2-3 månader i förväg"
+        "Beställ 2-3 månader i förväg",
       ],
-      details: "Enkel tårta (50 pers): 3 000-5 000 kr. Designtårta (50 pers): 6 000-10 000 kr. Dessertbord (50 pers): 4 000-8 000 kr."
+      details:
+        "Enkel tårta (50 pers): 3 000-5 000 kr. Designtårta (50 pers): 6 000-10 000 kr. Dessertbord (50 pers): 4 000-8 000 kr.",
     },
     {
       icon: Car,
@@ -137,10 +145,10 @@ const WeddingInfo = () => {
         "Vintage-bilar kostar mer än moderna",
         "Samordna gästtransport för att spara",
         "Överväg att hyra en minibuss",
-        "Kolla avstånd mellan vigsel och fest"
+        "Kolla avstånd mellan vigsel och fest",
       ],
-      details: "Vintage-bil med chaufför: 5 000-12 000 kr. Modern lyxbil: 3 000-6 000 kr. Gästbuss: 4 000-10 000 kr."
-    }
+      details: "Vintage-bil med chaufför: 5 000-12 000 kr. Modern lyxbil: 3 000-6 000 kr. Gästbuss: 4 000-10 000 kr.",
+    },
   ];
 
   const budgetTiers = [
@@ -154,8 +162,8 @@ const WeddingInfo = () => {
         "Buffé eller grillmiddag",
         "DJ eller Spotify-lista",
         "Vänner som fotografer",
-        "DIY-dekoration"
-      ]
+        "DIY-dekoration",
+      ],
     },
     {
       title: "Mellanbröllop",
@@ -167,8 +175,8 @@ const WeddingInfo = () => {
         "Sittande trerättersmiddag",
         "Professionell DJ",
         "Professionell fotograf",
-        "Floristblommor"
-      ]
+        "Floristblommor",
+      ],
     },
     {
       title: "Lyxbröllop",
@@ -180,9 +188,9 @@ const WeddingInfo = () => {
         "Gourmetmiddag med vinpaket",
         "Liveband + DJ",
         "Foto + video hela dagen",
-        "Fullständig eventplanering"
-      ]
-    }
+        "Fullständig eventplanering",
+      ],
+    },
   ];
 
   const weddingStats = [
@@ -191,7 +199,7 @@ const WeddingInfo = () => {
     { label: "Populäraste månaden", value: "Augusti" },
     { label: "Genomsnittlig planeringstid", value: "12-18 månader" },
     { label: "Andel som går över budget", value: "45%" },
-    { label: "Vanligaste dagen", value: "Lördag" }
+    { label: "Vanligaste dagen", value: "Lördag" },
   ];
 
   const checklistCategories = [
@@ -202,8 +210,8 @@ const WeddingInfo = () => {
         "Välj datum och säsong",
         "Boka lokal/venue",
         "Boka fotograf",
-        "Börja gästlistan"
-      ]
+        "Börja gästlistan",
+      ],
     },
     {
       timeframe: "9-12 månader innan",
@@ -212,18 +220,12 @@ const WeddingInfo = () => {
         "Boka musik/underhållning",
         "Välj bröllopskläder",
         "Boka vigselförrättare",
-        "Skicka save-the-dates"
-      ]
+        "Skicka save-the-dates",
+      ],
     },
     {
       timeframe: "6-9 månader innan",
-      tasks: [
-        "Boka florist",
-        "Beställ tårta",
-        "Planera smekmånad",
-        "Boka transport",
-        "Välj vigselringar"
-      ]
+      tasks: ["Boka florist", "Beställ tårta", "Planera smekmånad", "Boka transport", "Välj vigselringar"],
     },
     {
       timeframe: "3-6 månader innan",
@@ -232,8 +234,8 @@ const WeddingInfo = () => {
         "Planera bordsplacering",
         "Boka frisör och makeup",
         "Ordna övernattning för gäster",
-        "Planera ceremonin"
-      ]
+        "Planera ceremonin",
+      ],
     },
     {
       timeframe: "1-3 månader innan",
@@ -242,8 +244,8 @@ const WeddingInfo = () => {
         "Provsmaka maten",
         "Hämta ut bröllopskläder",
         "Skriv tal och löften",
-        "Gör detaljschema"
-      ]
+        "Gör detaljschema",
+      ],
     },
     {
       timeframe: "Sista veckan",
@@ -252,36 +254,37 @@ const WeddingInfo = () => {
         "Packa för smekmånaden",
         "Förbered kontanter för dricks",
         "Delegera uppgifter",
-        "Vila och njut!"
-      ]
-    }
+        "Vila och njut!",
+      ],
+    },
   ];
 
   const websiteFeatures = [
     {
       title: "Digital OSA/RSVP",
-      description: "Låt gäster svara på inbjudan digitalt. Samla enkelt in kostpreferenser, allergier och +1-information."
+      description:
+        "Låt gäster svara på inbjudan digitalt. Samla enkelt in kostpreferenser, allergier och +1-information.",
     },
     {
       title: "Praktisk information",
-      description: "Dela vägbeskrivningar, parkeringsinfo, klädkod och hotellförslag på ett ställe."
+      description: "Dela vägbeskrivningar, parkeringsinfo, klädkod och hotellförslag på ett ställe.",
     },
     {
       title: "Bildgalleri",
-      description: "Visa förlovningsbilder och samla bröllopsgästernas foton efter festen."
+      description: "Visa förlovningsbilder och samla bröllopsgästernas foton efter festen.",
     },
     {
-      title: "Vårt kärlekshistoria",
-      description: "Berätta er historia för gästerna - från första dejten till förlovningen."
+      title: "Vår kärlekshistoria",
+      description: "Berätta er historia för gästerna - från första dejten till förlovningen.",
     },
     {
       title: "Schema för dagen",
-      description: "Ge gästerna en tydlig överblick över bröllopsdagens program."
+      description: "Ge gästerna en tydlig överblick över bröllopsdagens program.",
     },
     {
       title: "Önskelista-länkar",
-      description: "Länka till era önskelistor så gästerna enkelt kan hitta presentidéer."
-    }
+      description: "Länka till era önskelistor så gästerna enkelt kan hitta presentidéer.",
+    },
   ];
 
   return (
@@ -292,22 +295,21 @@ const WeddingInfo = () => {
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-2">
               <Heart className="w-6 h-6 text-primary" fill="currentColor" />
-              <span className="font-serif text-xl font-medium text-foreground">
-                MittBröllop.se
-              </span>
+              <span className="font-serif text-xl font-medium text-foreground">MittBröllop.se</span>
             </Link>
             <div className="flex items-center gap-4">
               <Link to="/guider" className="hidden sm:block">
-                <Button variant="outline" className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2">
+                <Button
+                  variant="outline"
+                  className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2"
+                >
                   <Lightbulb className="w-4 h-4" />
                   Guider & Tips
                 </Button>
               </Link>
               {user ? (
                 <Link to="/dashboard">
-                  <Button className="bg-primary hover:bg-primary/90">
-                    Min planering
-                  </Button>
+                  <Button className="bg-primary hover:bg-primary/90">Min planering</Button>
                 </Link>
               ) : (
                 <>
@@ -315,9 +317,7 @@ const WeddingInfo = () => {
                     <Button variant="ghost">Logga in</Button>
                   </Link>
                   <Link to="/auth">
-                    <Button className="bg-primary hover:bg-primary/90">
-                      Kom igång gratis
-                    </Button>
+                    <Button className="bg-primary hover:bg-primary/90">Kom igång gratis</Button>
                   </Link>
                 </>
               )}
@@ -329,11 +329,7 @@ const WeddingInfo = () => {
       {/* Hero Section */}
       <section className="pt-24 pb-16 px-4">
         <div className="container mx-auto max-w-4xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <Calculator className="w-4 h-4" />
               Komplett guide till bröllopskostnader
@@ -342,7 +338,8 @@ const WeddingInfo = () => {
               Vad kostar ett bröllop i Sverige 2026?
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Allt du behöver veta om bröllopskostnader, budget, planering och hur du skapar ditt drömbroröllop utan att spräcka plånboken.
+              Allt du behöver veta om bröllopskostnader, budget, planering och hur du skapar ditt drömbroröllop utan att
+              spräcka plånboken.
             </p>
           </motion.div>
         </div>
@@ -395,7 +392,7 @@ const WeddingInfo = () => {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className={`h-full border-primary/10 ${index === 1 ? 'ring-2 ring-primary/30 shadow-lg' : ''}`}>
+                <Card className={`h-full border-primary/10 ${index === 1 ? "ring-2 ring-primary/30 shadow-lg" : ""}`}>
                   <CardHeader>
                     {index === 1 && (
                       <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full w-fit mb-2">
@@ -552,21 +549,16 @@ const WeddingInfo = () => {
       {/* Guest Count Guide */}
       <section className="py-16 px-4 bg-card/30">
         <div className="container mx-auto max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <Card className="border-primary/10">
               <CardHeader className="text-center">
                 <Users className="w-12 h-12 text-primary mx-auto mb-4" />
-                <CardTitle className="font-serif text-2xl md:text-3xl">
-                  Hur många gäster ska ni bjuda?
-                </CardTitle>
+                <CardTitle className="font-serif text-2xl md:text-3xl">Hur många gäster ska ni bjuda?</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <p className="text-muted-foreground text-center max-w-2xl mx-auto">
-                  Antalet gäster påverkar nästan alla kostnader. Här är några saker att tänka på när ni sätter gästlistan.
+                  Antalet gäster påverkar nästan alla kostnader. Här är några saker att tänka på när ni sätter
+                  gästlistan.
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-6">
@@ -576,11 +568,21 @@ const WeddingInfo = () => {
                       Kostnad per gäst
                     </h3>
                     <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li>• <strong>Mat & dryck:</strong> 600-1 500 kr/person</li>
-                      <li>• <strong>Inbjudningar:</strong> 30-100 kr/person</li>
-                      <li>• <strong>Bordsdekoration:</strong> 50-150 kr/person</li>
-                      <li>• <strong>Gåvor till gäster:</strong> 30-100 kr/person</li>
-                      <li>• <strong>Totalt rörligt:</strong> ~700-1 800 kr/person</li>
+                      <li>
+                        • <strong>Mat & dryck:</strong> 600-1 500 kr/person
+                      </li>
+                      <li>
+                        • <strong>Inbjudningar:</strong> 30-100 kr/person
+                      </li>
+                      <li>
+                        • <strong>Bordsdekoration:</strong> 50-150 kr/person
+                      </li>
+                      <li>
+                        • <strong>Gåvor till gäster:</strong> 30-100 kr/person
+                      </li>
+                      <li>
+                        • <strong>Totalt rörligt:</strong> ~700-1 800 kr/person
+                      </li>
                     </ul>
                   </div>
 
@@ -636,8 +638,8 @@ const WeddingInfo = () => {
               Skapa en bröllopshemsida
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              En digital bröllopshemsida gör det enkelt för gästerna att hitta information och OSA. 
-              Dessutom sparar du pengar på trycksaker!
+              En digital bröllopshemsida gör det enkelt för gästerna att hitta information och OSA. Dessutom sparar du
+              pengar på trycksaker!
             </p>
           </motion.div>
 
@@ -676,18 +678,14 @@ const WeddingInfo = () => {
       {/* Calculator Promo */}
       <section className="py-16 px-4 bg-gradient-to-br from-primary/5 via-primary/10 to-rose-100/30">
         <div className="container mx-auto max-w-4xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <Calculator className="w-12 h-12 text-primary mx-auto mb-4" />
             <h2 className="text-3xl md:text-4xl font-serif font-medium text-foreground mb-4">
               Beräkna din bröllopskostnad
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-              Använd våra smarta kalkylatorer för att beräkna mat, dryck och få en överblick 
-              över din totala bröllopsbudget.
+              Använd våra smarta kalkylatorer för att beräkna mat, dryck och få en överblick över din totala
+              bröllopsbudget.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to={user ? "/dashboard?tab=calculator" : "/auth?redirect=calculator"}>
@@ -710,18 +708,13 @@ const WeddingInfo = () => {
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-3xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <Heart className="w-12 h-12 text-primary mx-auto mb-6" fill="currentColor" />
             <h2 className="text-3xl md:text-4xl font-serif font-medium text-foreground mb-4">
               Redo att börja planera?
             </h2>
             <p className="text-muted-foreground mb-8">
-              Skapa ett gratis konto och få tillgång till våra verktyg för budget, gästlista, 
-              checklista och mycket mer.
+              Skapa ett gratis konto och få tillgång till våra verktyg för budget, gästlista, checklista och mycket mer.
             </p>
             <Link to="/auth">
               <Button size="lg" className="bg-primary hover:bg-primary/90 gap-2">
@@ -752,9 +745,7 @@ const WeddingInfo = () => {
                 Dashboard
               </Link>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © 2024 MittBröllop.se
-            </p>
+            <p className="text-sm text-muted-foreground">© 2024 MittBröllop.se</p>
           </div>
         </div>
       </footer>
