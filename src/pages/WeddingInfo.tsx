@@ -27,13 +27,16 @@ import {
 } from "lucide-react";
 import { usePremium } from "@/hooks/usePremium";
 import { TrialBanner } from "@/components/TrialBanner";
+import { PremiumGate } from "@/components/PremiumGate";
+import { useState } from "react";
 
 const WeddingInfo = () => {
   const auth = useAuth();
   const { user } = auth;
   const navigate = useNavigate();
-  const { isTrialActive, trialDaysLeft } = usePremium();
+  const { isTrialActive, trialDaysLeft, activatePremium, startTrial, hasUsedTrial, isProcessingPayment } = usePremium();
   const showBanner = !!user && isTrialActive && trialDaysLeft > 0;
+  const [premiumGateOpen, setPremiumGateOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -315,7 +318,7 @@ const WeddingInfo = () => {
         <TrialBanner
           daysLeft={trialDaysLeft}
           onUpgradeClick={() => {
-            // ...existing code or simple no-op for WeddingInfo...
+            setPremiumGateOpen(true);
           }}
         />
       )}
@@ -807,6 +810,22 @@ const WeddingInfo = () => {
           </div>
         </div>
       </footer>
+
+      {/* Premium Gate Modal */}
+      <PremiumGate
+        isOpen={premiumGateOpen}
+        onClose={() => setPremiumGateOpen(false)}
+        featureName="Premium"
+        hasUsedTrial={hasUsedTrial}
+        isProcessingPayment={isProcessingPayment}
+        onUpgrade={() => {
+          activatePremium();
+        }}
+        onStartTrial={() => {
+          startTrial();
+          setPremiumGateOpen(false);
+        }}
+      />
     </div>
   );
 };

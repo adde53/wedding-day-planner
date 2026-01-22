@@ -22,6 +22,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SupportDialog } from "@/components/SupportDialog";
 import { usePremium } from "@/hooks/usePremium";
 import { TrialBanner } from "@/components/TrialBanner";
+import { PremiumGate } from "@/components/PremiumGate";
+import { useState } from "react";
 
 const freeFeatures = [
   {
@@ -83,8 +85,11 @@ export default function Landing() {
   const auth = useAuth();
   const { user } = auth;
   const navigate = useNavigate();
-  const { isTrialActive, trialDaysLeft } = usePremium();
+  const { isTrialActive, trialDaysLeft, activatePremium, startTrial, hasUsedTrial, isProcessingPayment } = usePremium();
   const showBanner = !!user && isTrialActive && trialDaysLeft > 0;
+
+  // New: control PremiumGate modal
+  const [premiumGateOpen, setPremiumGateOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -107,7 +112,7 @@ export default function Landing() {
         <TrialBanner
           daysLeft={trialDaysLeft}
           onUpgradeClick={() => {
-            // ...existing code or simple no-op for Landing...
+            setPremiumGateOpen(true);
           }}
         />
       )}
@@ -391,12 +396,14 @@ export default function Landing() {
                 </li>
               ))}
             </ul>
-            <Link to="/auth">
-              <Button size="lg" className="relative w-full gap-2 shadow-lg shadow-primary/20">
-                <Crown className="w-4 h-4" />
-                Kom igång nu
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              className="relative w-full gap-2 shadow-lg shadow-primary/20"
+              onClick={() => setPremiumGateOpen(true)}
+            >
+              <Crown className="w-4 h-4" />
+              Uppgradera nu
+            </Button>
           </motion.div>
         </div>
       </section>
@@ -470,6 +477,22 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Premium Gate Modal */}
+      <PremiumGate
+        isOpen={premiumGateOpen}
+        onClose={() => setPremiumGateOpen(false)}
+        featureName="Premium"
+        hasUsedTrial={hasUsedTrial}
+        isProcessingPayment={isProcessingPayment}
+        onUpgrade={() => {
+          activatePremium();
+        }}
+        onStartTrial={() => {
+          startTrial();
+          setPremiumGateOpen(false);
+        }}
+      />
     </div>
   );
 }

@@ -1,12 +1,10 @@
-import { motion } from "framer-motion";
-import { Crown, Check, ArrowRight, Sparkles, Loader2, X } from "lucide-react";
+import { Crown, Check, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 
 interface PremiumGateProps {
@@ -39,16 +37,6 @@ export function PremiumGate({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        {/* Mobile close button */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10"
-          disabled={isProcessingPayment}
-        >
-          <X className="h-5 w-5" />
-          <span className="sr-only">Stäng</span>
-        </button>
-        
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl text-center flex flex-col items-center gap-3 pt-2">
             <div className="w-16 h-16 rounded-2xl bg-gold-light flex items-center justify-center">
@@ -85,10 +73,11 @@ export function PremiumGate({
             </div>
           )}
 
+          {/* Pricing: Monthly subscription */}
           <div className="bg-gold-light rounded-xl p-4 text-center">
-            <p className="text-sm text-muted-foreground mb-1">Engångsbetalning</p>
-            <p className="text-3xl font-serif font-bold text-foreground">199 kr</p>
-            <p className="text-xs text-muted-foreground">Livstids tillgång</p>
+            <p className="text-sm text-muted-foreground mb-1">Månadsprenumeration</p>
+            <p className="text-3xl font-serif font-bold text-foreground">49 kr/mån</p>
+            <p className="text-xs text-muted-foreground">Avsluta när som helst</p>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -118,13 +107,13 @@ export function PremiumGate({
               ) : (
                 <>
                   <Crown className="w-4 h-4" />
-                  Köp Premium – 199 kr
+                  Starta prenumeration – 49 kr/mån
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </Button>
             <p className="text-xs text-center text-muted-foreground">
-              Säker betalning via Stripe. Swish & kort accepteras.
+              Återkommande betalning via Stripe. Swish & kort accepteras. Avsluta när som helst.
             </p>
             <Button 
               variant="ghost" 

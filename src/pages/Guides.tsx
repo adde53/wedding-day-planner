@@ -21,6 +21,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SupportDialog } from "@/components/SupportDialog";
 import { usePremium } from "@/hooks/usePremium";
 import { TrialBanner } from "@/components/TrialBanner";
+import { PremiumGate } from "@/components/PremiumGate";
+import { useState } from "react";
 
 const guides = [
   {
@@ -121,8 +123,9 @@ export default function Guides() {
   const auth = useAuth();
   const { user } = auth;
   const navigate = useNavigate();
-  const { isTrialActive, trialDaysLeft } = usePremium();
+  const { isTrialActive, trialDaysLeft, activatePremium, startTrial, hasUsedTrial, isProcessingPayment } = usePremium();
   const showBanner = !!user && isTrialActive && trialDaysLeft > 0;
+  const [premiumGateOpen, setPremiumGateOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -145,7 +148,7 @@ export default function Guides() {
         <TrialBanner
           daysLeft={trialDaysLeft}
           onUpgradeClick={() => {
-            // ...existing code or simple no-op for Guides...
+            setPremiumGateOpen(true);
           }}
         />
       )}
@@ -408,6 +411,22 @@ export default function Guides() {
         </div>
       </section>
 
+      {/* Premium Gate Modal */}
+      <PremiumGate
+        isOpen={premiumGateOpen}
+        onClose={() => setPremiumGateOpen(false)}
+        featureName="Premium"
+        hasUsedTrial={hasUsedTrial}
+        isProcessingPayment={isProcessingPayment}
+        onUpgrade={() => {
+          activatePremium();
+        }}
+        onStartTrial={() => {
+          startTrial();
+          setPremiumGateOpen(false);
+        }}
+      />
+
       {/* Footer */}
       <footer className="border-t border-border py-12 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
@@ -440,4 +459,3 @@ export default function Guides() {
     </div>
   );
 }
-
