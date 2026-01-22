@@ -13,7 +13,8 @@ import {
   Crown,
   Check,
   Globe,
-  MessageCircle
+  MessageCircle,
+  Lightbulb
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -94,7 +95,8 @@ export default function Landing() {
             </Link>
             <div className="flex items-center gap-4">
               <Link to="/guider" className="hidden sm:block">
-                <Button variant="ghost" className="text-foreground hover:text-primary">
+                <Button variant="outline" className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2">
+                  <Lightbulb className="w-4 h-4" />
                   Guider & Tips
                 </Button>
               </Link>
