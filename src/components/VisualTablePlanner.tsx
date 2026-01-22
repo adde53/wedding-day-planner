@@ -61,7 +61,6 @@ const TABLE_SHAPES = [
 const CHAIR_SIZE = 32;
 const CHAIR_GAP = 8;
 
-
 export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps) {
   const { user } = useAuth();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -741,6 +740,8 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                 {localTables.map((table) => {
                   const dims = getTableDimensions(table);
                   const isSelected = selectedTable === table.id;
+                  const tableRotation = table.rotation || 0;
+                  const counterRotation = `rotate(${-tableRotation}deg)`;
 
                   return (
                     <div
@@ -749,14 +750,14 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                       style={{
                         left: table.x,
                         top: table.y,
-                        transform: `translate(-50%, -50%) rotate(${table.rotation || 0}deg)`,
+                        transform: `translate(-50%, -50%) rotate(${tableRotation}deg)`,
                       }}
                     >
                       {/* Chairs */}
                       {table.chairs.map((chair, idx) => {
                         const guest = chair.guestId ? getGuestById(chair.guestId) : null;
                         const isChairSelected = selectedChair?.tableId === table.id && selectedChair?.chairIndex === idx;
-                        
+
                         return (
                           <div
                             key={idx}
@@ -781,13 +782,20 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                                 ${isChairSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}
                               `}
                             >
-                              {guest ? guest.name.charAt(0).toUpperCase() : idx + 1}
+                              {/* Counter-rotate the label so it stays upright */}
+                              <span
+                                className="inline-block"
+                                style={{ transform: counterRotation, transformOrigin: "center" }}
+                              >
+                                {guest ? guest.name.charAt(0).toUpperCase() : idx + 1}
+                              </span>
                             </div>
                             {guest && (
                               <span 
                                 className="absolute top-full mt-0.5 text-[10px] font-medium text-foreground 
                                   bg-background/95 px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap 
                                   max-w-[70px] truncate border border-border/50"
+                                style={{ transform: counterRotation, transformOrigin: "left center" }}
                               >
                                 {guest.name.split(" ")[0]}
                               </span>
@@ -818,6 +826,7 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                         onMouseDown={(e) => handleTableMouseDown(e, table.id)}
                         onTouchStart={(e) => handleTableTouchStart(e, table.id)}
                       >
+                        {/* Counter-rotate table texts so they stay upright */}
                         {table.shape === "u-shape" ? (
                           <div className="relative w-full h-full">
                             <div className="absolute left-0 top-0 w-10 h-full bg-card border-r-0" 
@@ -842,16 +851,32 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                               }} 
                             />
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <span className="font-serif font-medium text-foreground text-sm">{table.name}</span>
-                              <span className="text-xs text-muted-foreground">{table.guests.length}/{table.capacity}</span>
+                              <span
+                                className="font-serif font-medium text-foreground text-sm"
+                                style={{ transform: counterRotation, transformOrigin: "center" }}
+                              >
+                                {table.name}
+                              </span>
+                              <span
+                                className="text-xs text-muted-foreground"
+                                style={{ transform: counterRotation, transformOrigin: "center" }}
+                              >
+                                {table.guests.length}/{table.capacity}
+                              </span>
                             </div>
                           </div>
                         ) : (
                           <>
-                            <span className="font-serif font-medium text-foreground text-sm text-center px-2 leading-tight">
+                            <span
+                              className="font-serif font-medium text-foreground text-sm text-center px-2 leading-tight"
+                              style={{ transform: counterRotation, transformOrigin: "center" }}
+                            >
                               {table.name}
                             </span>
-                            <span className="text-xs text-muted-foreground">
+                            <span
+                              className="text-xs text-muted-foreground"
+                              style={{ transform: counterRotation, transformOrigin: "center" }}
+                            >
                               {table.guests.length}/{table.capacity}
                             </span>
                           </>
@@ -937,3 +962,4 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
     </div>
   );
 }
+
