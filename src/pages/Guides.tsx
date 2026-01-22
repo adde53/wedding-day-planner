@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Heart, 
   Wallet, 
@@ -13,11 +13,14 @@ import {
   Globe,
   MessageCircle,
   Calendar,
-  Download
+  Download,
+  LogOut, // added
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { SupportDialog } from "@/components/SupportDialog";
+import { usePremium } from "@/hooks/usePremium";
+import { TrialBanner } from "@/components/TrialBanner";
 
 const guides = [
   {
@@ -115,12 +118,40 @@ const guides = [
 ];
 
 export default function Guides() {
-  const { user } = useAuth();
+  const auth = useAuth();
+  const { user } = auth;
+  const navigate = useNavigate();
+  const { isTrialActive, trialDaysLeft } = usePremium();
+  const showBanner = !!user && isTrialActive && trialDaysLeft > 0;
+
+  const handleLogout = async () => {
+    try {
+      const fn = (auth as any).logout ?? (auth as any).signOut ?? (auth as any).logOut;
+      if (typeof fn === "function") {
+        await fn();
+      } else {
+        console.warn("No logout function available on useAuth()");
+      }
+      navigate("/");
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-hero-gradient">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-lg border-b border-border/50">
+      {/* Trial Banner (flow, same spacing pattern as Dashboard) */}
+      {showBanner && (
+        <TrialBanner
+          daysLeft={trialDaysLeft}
+          onUpgradeClick={() => {
+            // ...existing code or simple no-op for Guides...
+          }}
+        />
+      )}
+
+      {/* Navigation (sticky like Dashboard) */}
+      <nav className="sticky top-0 z-40 bg-background/70 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-3">
@@ -132,13 +163,38 @@ export default function Guides() {
               </span>
             </Link>
             <div className="flex items-center gap-4">
+              <Link to="/brollopsinfo" className="hidden md:block">
+                <Button
+                  variant="outline"
+                  className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50"
+                >
+                  Bröllopskostnader
+                </Button>
+              </Link>
+              <Link to="/guider" className="hidden sm:block">
+                <Button variant="outline" className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2">
+                  <Lightbulb className="w-4 h-4" />
+                  Guider & Tips
+                </Button>
+              </Link>
               {user ? (
-                <Link to="/dashboard">
-                  <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
-                    Min planering
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                <>
+                  <Link to="/dashboard">
+                    <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
+                      Min planering
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    className="text-foreground hover:text-primary p-2"
+                    onClick={handleLogout}
+                    aria-label="Logga ut"
+                    title="Logga ut"
+                  >
+                    <LogOut className="w-4 h-4" />
                   </Button>
-                </Link>
+                </>
               ) : (
                 <>
                   <Link to="/auth">
@@ -159,12 +215,12 @@ export default function Guides() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-4 sm:px-6 relative overflow-hidden">
+      <section className="pt-24 pb-16 px-4 sm:px-6 relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute top-40 left-10 w-64 h-64 bg-rose-light/40 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-60 right-10 w-72 h-72 bg-gold-light/50 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-20 left-1/3 w-48 h-48 bg-sage-light/60 rounded-full blur-3xl pointer-events-none" />
-        
+
         <div className="max-w-4xl mx-auto relative text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -195,7 +251,7 @@ export default function Guides() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
           >
-            Här hittar du guider och verktyg som hjälper dig planera ditt bröllop enkelt och roligt. 
+            Här hittar du guider och verktyg som hjälper dig planera ditt bröllop enkelt och roligt.
             Från budget och RSVP till bordsplacering och dryckesplanering – allt på ett ställe.
           </motion.p>
 
@@ -279,8 +335,8 @@ export default function Guides() {
                   <p className="text-sm font-medium text-foreground mb-3">Exempel på viktiga steg:</p>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {guide.milestones.map((milestone, i) => (
-                      <div 
-                        key={i} 
+                      <div
+                        key={i}
                         className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50"
                       >
                         <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
@@ -331,7 +387,7 @@ export default function Guides() {
             {/* Decorative circles */}
             <div className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
             <div className="absolute bottom-0 right-0 w-60 h-60 bg-white/5 rounded-full blur-3xl" />
-            
+
             <div className="relative w-16 h-16 rounded-2xl bg-primary-foreground/20 flex items-center justify-center mx-auto mb-6">
               <Heart className="w-8 h-8 text-primary-foreground" />
             </div>
@@ -339,7 +395,7 @@ export default function Guides() {
               Redo att börja planera?
             </h2>
             <p className="relative text-base sm:text-lg text-primary-foreground/80 mb-8 max-w-lg mx-auto">
-              Skapa ett gratis konto och ta första steget mot ert drömbröllop. 
+              Skapa ett gratis konto och ta första steget mot ert drömbröllop.
               Alla verktyg ni behöver finns här.
             </p>
             <Link to="/auth">
@@ -384,3 +440,4 @@ export default function Guides() {
     </div>
   );
 }
+

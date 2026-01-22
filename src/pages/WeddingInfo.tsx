@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,10 +23,31 @@ import {
   Globe,
   ArrowRight,
   Lightbulb,
+  LogOut,
 } from "lucide-react";
+import { usePremium } from "@/hooks/usePremium";
+import { TrialBanner } from "@/components/TrialBanner";
 
 const WeddingInfo = () => {
-  const { user } = useAuth();
+  const auth = useAuth();
+  const { user } = auth;
+  const navigate = useNavigate();
+  const { isTrialActive, trialDaysLeft } = usePremium();
+  const showBanner = !!user && isTrialActive && trialDaysLeft > 0;
+
+  const handleLogout = async () => {
+    try {
+      const fn = (auth as any).logout ?? (auth as any).signOut ?? (auth as any).logOut;
+      if (typeof fn === "function") {
+        await fn();
+      } else {
+        console.warn("No logout function available on useAuth()");
+      }
+      navigate("/");
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
+  };
 
   const costCategories = [
     {
@@ -289,35 +310,72 @@ const WeddingInfo = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-rose-50/30 to-background">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="container mx-auto px-4">
+      {/* Trial Banner (flow, same spacing pattern as Dashboard) */}
+      {showBanner && (
+        <TrialBanner
+          daysLeft={trialDaysLeft}
+          onUpgradeClick={() => {
+            // ...existing code or simple no-op for WeddingInfo...
+          }}
+        />
+      )}
+
+      {/* Navigation (sticky like Dashboard) */}
+      <nav className="sticky top-0 z-40 bg-background/70 backdrop-blur-lg border-b border-border/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
-              <Heart className="w-6 h-6 text-primary" fill="currentColor" />
-              <span className="font-serif text-xl font-medium text-foreground">MittBröllop.se</span>
+            <Link to="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md shadow-primary/20">
+                <Heart className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="font-serif text-xl font-medium text-foreground">
+                MittBröllop.se
+              </span>
             </Link>
             <div className="flex items-center gap-4">
-              <Link to="/guider" className="hidden sm:block">
+              <Link to="/brollopsinfo" className="hidden md:block">
                 <Button
                   variant="outline"
-                  className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2"
+                  className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50"
                 >
+                  Bröllopskostnader
+                </Button>
+              </Link>
+              <Link to="/guider" className="hidden sm:block">
+                <Button variant="outline" className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2">
                   <Lightbulb className="w-4 h-4" />
                   Guider & Tips
                 </Button>
               </Link>
               {user ? (
-                <Link to="/dashboard">
-                  <Button className="bg-primary hover:bg-primary/90">Min planering</Button>
-                </Link>
+                <>
+                  <Link to="/dashboard">
+                    <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
+                      Min planering
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    className="text-foreground hover:text-primary p-2"
+                    onClick={handleLogout}
+                    aria-label="Logga ut"
+                    title="Logga ut"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </>
               ) : (
                 <>
-                  <Link to="/auth" className="hidden sm:block">
-                    <Button variant="ghost">Logga in</Button>
+                  <Link to="/auth">
+                    <Button variant="ghost" className="text-foreground hover:text-primary">
+                      Logga in
+                    </Button>
                   </Link>
                   <Link to="/auth">
-                    <Button className="bg-primary hover:bg-primary/90">Kom igång gratis</Button>
+                    <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
+                      Kom igång gratis
+                    </Button>
                   </Link>
                 </>
               )}
@@ -754,3 +812,4 @@ const WeddingInfo = () => {
 };
 
 export default WeddingInfo;
+

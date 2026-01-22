@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Heart, 
   CheckSquare, 
@@ -14,11 +14,14 @@ import {
   Check,
   Globe,
   MessageCircle,
-  Lightbulb
+  Lightbulb,
+  LogOut, // added
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { SupportDialog } from "@/components/SupportDialog";
+import { usePremium } from "@/hooks/usePremium";
+import { TrialBanner } from "@/components/TrialBanner";
 
 const freeFeatures = [
   {
@@ -77,12 +80,40 @@ const stats = [
 ];
 
 export default function Landing() {
-  const { user } = useAuth();
+  const auth = useAuth();
+  const { user } = auth;
+  const navigate = useNavigate();
+  const { isTrialActive, trialDaysLeft } = usePremium();
+  const showBanner = !!user && isTrialActive && trialDaysLeft > 0;
+
+  const handleLogout = async () => {
+    try {
+      const fn = (auth as any).logout ?? (auth as any).signOut ?? (auth as any).logOut;
+      if (typeof fn === "function") {
+        await fn();
+      } else {
+        console.warn("No logout function available on useAuth()");
+      }
+      navigate("/");
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-hero-gradient">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-lg border-b border-border/50">
+      {/* Trial Banner (flow, same spacing pattern as Dashboard) */}
+      {showBanner && (
+        <TrialBanner
+          daysLeft={trialDaysLeft}
+          onUpgradeClick={() => {
+            // ...existing code or simple no-op for Landing...
+          }}
+        />
+      )}
+
+      {/* Navigation (sticky like Dashboard) */}
+      <nav className="sticky top-0 z-40 bg-background/70 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-3">
@@ -95,7 +126,10 @@ export default function Landing() {
             </Link>
             <div className="flex items-center gap-4">
               <Link to="/brollopsinfo" className="hidden md:block">
-                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                <Button
+                  variant="outline"
+                  className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50"
+                >
                   Bröllopskostnader
                 </Button>
               </Link>
@@ -106,12 +140,23 @@ export default function Landing() {
                 </Button>
               </Link>
               {user ? (
-                <Link to="/dashboard">
-                  <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
-                    Min planering
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                <>
+                  <Link to="/dashboard">
+                    <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
+                      Min planering
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    className="text-foreground hover:text-primary p-2"
+                    onClick={handleLogout}
+                    aria-label="Logga ut"
+                    title="Logga ut"
+                  >
+                    <LogOut className="w-4 h-4" />
                   </Button>
-                </Link>
+                </>
               ) : (
                 <>
                   <Link to="/auth">
@@ -428,3 +473,4 @@ export default function Landing() {
     </div>
   );
 }
+
