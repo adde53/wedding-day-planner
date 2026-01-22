@@ -93,6 +93,11 @@ export default function Landing() {
               </span>
             </Link>
             <div className="flex items-center gap-4">
+              <Link to="/guider" className="hidden sm:block">
+                <Button variant="ghost" className="text-foreground hover:text-primary">
+                  Guider & Tips
+                </Button>
+              </Link>
               {user ? (
                 <Link to="/dashboard">
                   <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
@@ -394,6 +399,9 @@ export default function Landing() {
               </span>
             </div>
             <div className="flex items-center gap-6">
+              <Link to="/guider" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Guider & Tips
+              </Link>
               <SupportDialog>
                 <button className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
                   <MessageCircle className="w-4 h-4" />
