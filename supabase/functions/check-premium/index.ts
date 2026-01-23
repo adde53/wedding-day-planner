@@ -28,25 +28,31 @@ serve(async (req) => {
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
+    logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
+    logStep("Authenticating user with token");
+
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { email: user.email });
+    logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    
-    // Check if the customer exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
+
     if (customers.data.length === 0) {
-      logStep("No Stripe customer found");
-      return new Response(JSON.stringify({ isPremium: false }), {
+      logStep("No customer found, returning not premium");
+      return new Response(JSON.stringify({ 
+        isPremium: false,
+        subscriptionEnd: null,
+        subscriptionStatus: null
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -55,34 +61,65 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Check for completed payments for the Premium product
+    // Check for active subscriptions
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "active",
+      limit: 1,
+    });
+
+    if (subscriptions.data.length > 0) {
+      const subscription = subscriptions.data[0];
+      const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      logStep("Active subscription found", { 
+        subscriptionId: subscription.id, 
+        endDate: subscriptionEnd,
+        status: subscription.status
+      });
+
+      return new Response(JSON.stringify({ 
+        isPremium: true,
+        subscriptionEnd: subscriptionEnd,
+        subscriptionStatus: subscription.status
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // Also check for legacy one-time payments (for existing customers)
     const paymentIntents = await stripe.paymentIntents.list({
       customer: customerId,
-      limit: 100,
+      limit: 10,
     });
 
-    // Check if any payment was successful
-    const hasSuccessfulPayment = paymentIntents.data.some(
-      (pi: { status: string }) => pi.status === "succeeded"
+    const successfulPayment = paymentIntents.data.find(
+      (pi: { status: string; amount: number; currency: string }) => 
+        pi.status === "succeeded" && pi.amount === 19900 && pi.currency === "sek"
     );
 
-    // Also check checkout sessions for completed payments
-    const sessions = await stripe.checkout.sessions.list({
-      customer: customerId,
-      limit: 100,
-    });
+    if (successfulPayment) {
+      logStep("Legacy one-time payment found", { paymentId: successfulPayment.id });
+      return new Response(JSON.stringify({ 
+        isPremium: true,
+        subscriptionEnd: null,
+        subscriptionStatus: "lifetime"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
-    const hasCompletedCheckout = sessions.data.some(
-      (session: { payment_status: string }) => session.payment_status === "paid"
-    );
-
-    const isPremium = hasSuccessfulPayment || hasCompletedCheckout;
-    logStep("Premium status checked", { isPremium, hasSuccessfulPayment, hasCompletedCheckout });
-
-    return new Response(JSON.stringify({ isPremium }), {
+    logStep("No active subscription or payment found");
+    return new Response(JSON.stringify({ 
+      isPremium: false,
+      subscriptionEnd: null,
+      subscriptionStatus: null
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
+
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
