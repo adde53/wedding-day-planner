@@ -54,7 +54,8 @@ const guides = [
     tip: "Testa olika scenarion innan ni bestämmer slutgiltigt.",
     cta: "Prova bordsplaceraren",
     ctaLink: "/auth?redirect=tables",
-    dashboardTab: "tables"
+    dashboardTab: "tables",
+    premium: true, // premium-gated
   },
   {
     id: "rsvp",
@@ -84,7 +85,8 @@ const guides = [
     tip: "Lämna alltid lite extra dryck för säkerhets skull – gäster gillar variation!",
     cta: "Prova dryckes- och matkalkylatorn",
     ctaLink: "/auth?redirect=drinks",
-    dashboardTab: "drinks"
+    dashboardTab: "drinks",
+    premium: true, // premium-gated
   },
   {
     id: "checklist",
@@ -123,9 +125,13 @@ export default function Guides() {
   const auth = useAuth();
   const { user } = auth;
   const navigate = useNavigate();
-  const { isTrialActive, trialDaysLeft, activatePremium, startTrial, hasUsedTrial, isProcessingPayment } = usePremium();
+  const premium = usePremium();
+  const { isTrialActive, trialDaysLeft, activatePremium, startTrial, hasUsedTrial, isProcessingPayment } = premium as any;
+  const hasPaidAccess = Boolean(isTrialActive || (premium as any).isPremium || (premium as any).isActive || (premium as any).hasSubscription);
   const showBanner = !!user && isTrialActive && trialDaysLeft > 0;
+
   const [premiumGateOpen, setPremiumGateOpen] = useState(false);
+  const [premiumFeatureName, setPremiumFeatureName] = useState<string>("Premium");
 
   const handleLogout = async () => {
     try {
@@ -141,9 +147,28 @@ export default function Guides() {
     }
   };
 
+  const handleGuideCTA = (guide: (typeof guides)[number]) => {
+    if (!user) {
+      navigate(guide.ctaLink);
+      return;
+    }
+
+    const requiresPremium = Boolean((guide as any).premium);
+    if (requiresPremium && !hasPaidAccess) {
+      setPremiumFeatureName(guide.title);
+      setPremiumGateOpen(true);
+      return;
+    }
+
+    if (guide.dashboardTab) {
+      navigate(`/dashboard?tab=${guide.dashboardTab}`);
+    } else {
+      navigate(guide.ctaLink);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-hero-gradient">
-      {/* Trial Banner (flow, same spacing pattern as Dashboard) */}
       {showBanner && (
         <TrialBanner
           daysLeft={trialDaysLeft}
@@ -153,7 +178,6 @@ export default function Guides() {
         />
       )}
 
-      {/* Navigation (sticky like Dashboard) */}
       <nav className="sticky top-0 z-40 bg-background/70 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
@@ -217,9 +241,7 @@ export default function Guides() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="pt-24 pb-16 px-4 sm:px-6 relative overflow-hidden">
-        {/* Decorative elements */}
         <div className="absolute top-40 left-10 w-64 h-64 bg-rose-light/40 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-60 right-10 w-72 h-72 bg-gold-light/50 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-20 left-1/3 w-48 h-48 bg-sage-light/60 rounded-full blur-3xl pointer-events-none" />
@@ -273,7 +295,6 @@ export default function Guides() {
         </div>
       </section>
 
-      {/* Guides Section */}
       <section className="py-12 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto space-y-12">
           {guides.map((guide, index) => (
@@ -303,7 +324,6 @@ export default function Guides() {
                 {guide.intro}
               </p>
 
-              {/* Steps list */}
               {guide.steps && (
                 <div className="mb-6">
                   <p className="text-sm font-medium text-foreground mb-3">Steg-för-steg:</p>
@@ -320,7 +340,6 @@ export default function Guides() {
                 </div>
               )}
 
-              {/* Features list for website section */}
               {guide.features && (
                 <ul className="space-y-2 mb-6">
                   {guide.features.map((feature, i) => (
@@ -332,7 +351,6 @@ export default function Guides() {
                 </ul>
               )}
 
-              {/* Milestones for checklist */}
               {guide.milestones && (
                 <div className="mb-6">
                   <p className="text-sm font-medium text-foreground mb-3">Exempel på viktiga steg:</p>
@@ -353,7 +371,6 @@ export default function Guides() {
                 </div>
               )}
 
-              {/* Tip box */}
               <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-gold-light/50 to-terracotta-light/30 border border-gold/20 mb-6">
                 <Lightbulb className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-foreground">
@@ -361,23 +378,22 @@ export default function Guides() {
                 </p>
               </div>
 
-              {/* CTA Button */}
-              <Link to={guide.ctaLink}>
-                <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
-                  {guide.cta}
-                  {guide.id === "checklist" ? (
-                    <Download className="ml-2 w-4 h-4" />
-                  ) : (
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  )}
-                </Button>
-              </Link>
+              <Button
+                className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-md shadow-primary/20"
+                onClick={() => handleGuideCTA(guide)}
+              >
+                {guide.cta}
+                {guide.id === "checklist" ? (
+                  <Download className="ml-2 w-4 h-4" />
+                ) : (
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                )}
+              </Button>
             </motion.article>
           ))}
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -387,7 +403,6 @@ export default function Guides() {
             transition={{ duration: 0.5 }}
             className="bg-gradient-to-br from-primary via-primary to-primary/90 rounded-3xl p-8 sm:p-12 text-center shadow-2xl shadow-primary/30 relative overflow-hidden"
           >
-            {/* Decorative circles */}
             <div className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
             <div className="absolute bottom-0 right-0 w-60 h-60 bg-white/5 rounded-full blur-3xl" />
 
@@ -411,11 +426,10 @@ export default function Guides() {
         </div>
       </section>
 
-      {/* Premium Gate Modal */}
       <PremiumGate
         isOpen={premiumGateOpen}
         onClose={() => setPremiumGateOpen(false)}
-        featureName="Premium"
+        featureName={premiumFeatureName}
         hasUsedTrial={hasUsedTrial}
         isProcessingPayment={isProcessingPayment}
         onUpgrade={() => {
@@ -427,7 +441,6 @@ export default function Guides() {
         }}
       />
 
-      {/* Footer */}
       <footer className="border-t border-border py-12 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
