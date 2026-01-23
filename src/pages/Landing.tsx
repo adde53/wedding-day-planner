@@ -78,7 +78,7 @@ const premiumFeatures = [
 const stats = [
   { value: "16+", label: "Checklistuppgifter" },
   { value: "Gratis", label: "Grundversion" },
-  { value: "199kr", label: "Premium engång" },
+  { value: "49kr", label: "Premium/mån" },
 ];
 
 export default function Landing() {
@@ -335,7 +335,7 @@ export default function Landing() {
               Avancerade verktyg för perfekt planering
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Få tillgång till våra smarta kalkylatorer och bordsplacering för 199 kr — en engångsbetalning.
+              Få tillgång till våra smarta kalkylatorer och bordsplacering för endast 49 kr/mån — avsluta när som helst.
             </p>
           </motion.div>
 
@@ -377,9 +377,9 @@ export default function Landing() {
           >
             <div className="absolute inset-0 bg-gradient-to-br from-gold-light/30 via-transparent to-rose-light/20 pointer-events-none" />
             <div className="relative text-center mb-6">
-              <p className="text-sm text-muted-foreground mb-2">Premium - Engångsbetalning</p>
-              <p className="text-5xl font-serif font-bold text-foreground">199 kr</p>
-              <p className="text-sm text-muted-foreground mt-2">Livstids tillgång</p>
+              <p className="text-sm text-muted-foreground mb-2">Premium - Månadsprenumeration</p>
+              <p className="text-5xl font-serif font-bold text-foreground">49 kr<span className="text-2xl font-normal text-muted-foreground">/mån</span></p>
+              <p className="text-sm text-muted-foreground mt-2">Avsluta när som helst</p>
             </div>
             <ul className="relative space-y-3 mb-8">
               {[
