@@ -13,23 +13,29 @@ export function usePremium() {
   const [trialDaysLeft, setTrialDaysLeft] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   const checkPremiumStatus = useCallback(async () => {
     if (!user) {
       setIsPremium(false);
       setIsTrialActive(false);
       setTrialDaysLeft(0);
+      setSubscriptionEnd(null);
+      setSubscriptionStatus(null);
       setIsLoading(false);
       return;
     }
 
-    // First check Stripe for paid premium
+    // First check Stripe for paid premium/subscription
     try {
       const { data, error } = await supabase.functions.invoke('check-premium');
       
       if (!error && data?.isPremium) {
         setIsPremium(true);
         setIsTrialActive(false);
+        setSubscriptionEnd(data.subscriptionEnd || null);
+        setSubscriptionStatus(data.subscriptionStatus || null);
         setIsLoading(false);
         return;
       }
@@ -125,6 +131,36 @@ export function usePremium() {
       toast({
         title: "Något gick fel",
         description: "Kunde inte starta betalningen. Försök igen.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const openCustomerPortal = async () => {
+    if (!user) {
+      toast({
+        title: "Logga in först",
+        description: "Du måste vara inloggad för att hantera din prenumeration.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      } else {
+        throw new Error("No portal URL received");
+      }
+    } catch (error) {
+      console.error("Customer portal error:", error);
+      toast({
+        title: "Något gick fel",
+        description: "Kunde inte öppna prenumerationshanteringen. Försök igen.",
         variant: "destructive",
       });
     }
@@ -228,6 +264,9 @@ export function usePremium() {
     isTrialActive, 
     trialDaysLeft,
     hasUsedTrial,
-    refreshPremiumStatus: checkPremiumStatus
+    refreshPremiumStatus: checkPremiumStatus,
+    subscriptionEnd,
+    subscriptionStatus,
+    openCustomerPortal
   };
 }

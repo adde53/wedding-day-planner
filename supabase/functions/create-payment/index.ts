@@ -45,23 +45,38 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing Stripe customer", { customerId });
+
+      // Check if customer already has an active subscription
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
+      });
+
+      if (subscriptions.data.length > 0) {
+        logStep("Customer already has active subscription");
+        return new Response(JSON.stringify({ error: "Du har redan en aktiv prenumeration" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
     } else {
       logStep("No existing customer, will create new");
     }
 
     const origin = req.headers.get("origin") || "https://mittbrollop.se";
 
-    // Create a one-time payment session for Premium (199 SEK)
+    // Create a subscription checkout session (49 SEK/month)
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SrlV3PI0lb9OQXcoTyuxW0z",
+          price: "price_1SsfYXPI0lb9OQXcQvzia083",
           quantity: 1,
         },
       ],
-      mode: "payment",
+      mode: "subscription",
       success_url: `${origin}/dashboard?payment=success`,
       cancel_url: `${origin}/dashboard?payment=cancelled`,
       metadata: {
