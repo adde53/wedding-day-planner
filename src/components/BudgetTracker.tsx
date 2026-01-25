@@ -81,6 +81,7 @@ export function BudgetTracker() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editEstimated, setEditEstimated] = useState("");
+  const [editActualValue, setEditActualValue] = useState("");
 
   const fetchItems = useCallback(async () => {
     if (!user) return;
@@ -162,14 +163,17 @@ export function BudgetTracker() {
   const budgetDifference = overallBudget - totalActual;
   const estimatedDifference = overallBudget - totalEstimated;
 
-  const updateActual = async (id: string, value: number) => {
+  const saveActualCost = async (id: string) => {
     const item = items.find((i) => i.id === id);
     if (!item) return;
+
+    const value = Number(editActualValue.replace(/\D/g, '')) || 0;
 
     setItems((prev) =>
       prev.map((i) => (i.id === id ? { ...i, actual: value } : i))
     );
     setEditingId(null);
+    setEditActualValue("");
 
     try {
       const { error } = await supabase
@@ -185,6 +189,11 @@ export function BudgetTracker() {
       );
       toast.error("Kunde inte uppdatera kostnad");
     }
+  };
+
+  const startEditingActual = (id: string, currentValue: number) => {
+    setEditingId(id);
+    setEditActualValue(currentValue > 0 ? currentValue.toString() : "");
   };
 
   const updateItem = async (id: string) => {
@@ -652,17 +661,17 @@ export function BudgetTracker() {
                               type="text"
                               inputMode="numeric"
                               pattern="[0-9]*"
-                              value={item.actual || ""}
-                              onChange={(e) => updateActual(item.id, Number(e.target.value.replace(/\D/g, '')) || 0)}
-                              onBlur={() => setEditingId(null)}
-                              onKeyDown={(e) => e.key === "Enter" && setEditingId(null)}
+                              value={editActualValue}
+                              onChange={(e) => setEditActualValue(e.target.value.replace(/\D/g, ''))}
+                              onBlur={() => saveActualCost(item.id)}
+                              onKeyDown={(e) => e.key === "Enter" && saveActualCost(item.id)}
                               className="w-28 px-3 py-2 text-right rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                               autoFocus
                               placeholder="0"
                             />
                           ) : (
                             <button
-                              onClick={() => setEditingId(item.id)}
+                              onClick={() => startEditingActual(item.id, item.actual)}
                               className={cn(
                                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                                 item.actual > 0
