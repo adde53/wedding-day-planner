@@ -119,42 +119,45 @@ export default function Landing() {
 
       {/* Navigation (sticky like Dashboard) */}
       <nav className="sticky top-0 z-40 bg-background/70 backdrop-blur-lg border-b border-border/50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md shadow-primary/20">
-                <Heart className="w-5 h-5 text-primary-foreground" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-6">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <Link to="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md shadow-primary/20">
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
               </div>
-              <span className="font-serif text-xl font-medium text-foreground">
-                MittBröllop.se
+              <span className="font-serif text-base sm:text-xl font-medium text-foreground">
+                MittBröllop
               </span>
             </Link>
-            <div className="flex items-center gap-4">
-              <Link to="/brollopsinfo" className="hidden md:block">
+            <div className="flex items-center gap-1.5 sm:gap-4">
+              <Link to="/brollopsinfo" className="hidden lg:block">
                 <Button
                   variant="outline"
+                  size="sm"
                   className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50"
                 >
                   Bröllopskostnader
                 </Button>
               </Link>
-              <Link to="/guider" className="hidden sm:block">
-                <Button variant="outline" className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2">
+              <Link to="/guider" className="hidden md:block">
+                <Button variant="outline" size="sm" className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2">
                   <Lightbulb className="w-4 h-4" />
-                  Guider & Tips
+                  Guider
                 </Button>
               </Link>
               {user ? (
                 <>
                   <Link to="/dashboard">
-                    <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
-                      Min planering
-                      <ArrowRight className="ml-2 w-4 h-4" />
+                    <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 text-xs sm:text-sm px-2.5 sm:px-4">
+                      <span className="hidden sm:inline">Min planering</span>
+                      <span className="sm:hidden">Planering</span>
+                      <ArrowRight className="ml-1 sm:ml-2 w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
                   </Link>
                   <Button
                     variant="ghost"
-                    className="text-foreground hover:text-primary p-2"
+                    size="sm"
+                    className="text-foreground hover:text-primary p-1.5 sm:p-2"
                     onClick={handleLogout}
                     aria-label="Logga ut"
                     title="Logga ut"
@@ -164,14 +167,15 @@ export default function Landing() {
                 </>
               ) : (
                 <>
-                  <Link to="/auth">
-                    <Button variant="ghost" className="text-foreground hover:text-primary">
+                  <Link to="/auth" className="hidden sm:block">
+                    <Button variant="ghost" size="sm" className="text-foreground hover:text-primary">
                       Logga in
                     </Button>
                   </Link>
                   <Link to="/auth">
-                    <Button className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
-                      Kom igång gratis
+                    <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 text-xs sm:text-sm px-2.5 sm:px-4">
+                      <span className="hidden xs:inline">Kom igång</span>
+                      <span className="xs:hidden">Skapa konto</span>
                     </Button>
                   </Link>
                 </>
@@ -247,14 +251,14 @@ export default function Landing() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-20 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
+            className="mt-12 sm:mt-20 grid grid-cols-3 gap-3 sm:gap-8 max-w-2xl mx-auto px-2"
           >
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-4xl font-serif font-medium text-foreground">
+                <p className="text-2xl sm:text-4xl font-serif font-medium text-foreground">
                   {stat.value}
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   {stat.label}
                 </p>
               </div>
@@ -444,10 +448,10 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-12 px-4 sm:px-6">
+      <footer className="border-t border-border py-8 sm:py-12 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-center md:justify-start gap-3">
               <div
                 className="w-10 h-10 rounded-lg bg-sage-gradient flex items-center justify-center"
               >
@@ -457,23 +461,23 @@ export default function Landing() {
                 MittBröllop.se
               </span>
             </div>
-            <div className="flex items-center gap-6">
-              <Link to="/brollopsinfo" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-6">
+              <Link to="/brollopsinfo" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Bröllopskostnader
               </Link>
-              <Link to="/guider" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/guider" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Guider & Tips
               </Link>
               <SupportDialog>
-                <button className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-                  <MessageCircle className="w-4 h-4" />
-                  Kontakta support
+                <button className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                  <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                  Support
                 </button>
               </SupportDialog>
-              <p className="text-sm text-muted-foreground">
-                © 2025 MittBröllop.se
-              </p>
             </div>
+            <p className="text-xs sm:text-sm text-muted-foreground text-center md:text-left">
+              © 2025 MittBröllop.se
+            </p>
           </div>
         </div>
       </footer>
