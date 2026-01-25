@@ -168,10 +168,11 @@ export function FoodCalculator({ confirmedGuests }: FoodCalculatorProps) {
               <Label htmlFor="food-guests">Antal gäster</Label>
               <Input
                 id="food-guests"
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={guestCount}
-                onChange={(e) => setGuestCount(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => setGuestCount(Math.max(1, parseInt(e.target.value.replace(/\D/g, '')) || 1))}
               />
             </div>
 
