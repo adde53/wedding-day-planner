@@ -359,9 +359,11 @@ export function BudgetTracker() {
                 <div>
                   <Label>Total budget (SEK)</Label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={overallBudget}
-                    onChange={(e) => setOverallBudget(Number(e.target.value))}
+                    onChange={(e) => setOverallBudget(Number(e.target.value.replace(/\D/g, '')) || 0)}
                     className="mt-1"
                   />
                 </div>
@@ -506,9 +508,11 @@ export function BudgetTracker() {
               <div>
                 <Label>Uppskattad kostnad (SEK)</Label>
                 <Input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={newItemEstimated}
-                  onChange={(e) => setNewItemEstimated(e.target.value)}
+                  onChange={(e) => setNewItemEstimated(e.target.value.replace(/\D/g, ''))}
                   placeholder="0"
                   className="mt-1"
                 />
@@ -618,9 +622,11 @@ export function BudgetTracker() {
                           placeholder="Namn"
                         />
                         <Input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={editEstimated}
-                          onChange={(e) => setEditEstimated(e.target.value)}
+                          onChange={(e) => setEditEstimated(e.target.value.replace(/\D/g, ''))}
                           className="w-32"
                           placeholder="Budget"
                         />
@@ -643,9 +649,11 @@ export function BudgetTracker() {
                         <div className="flex items-center gap-2">
                           {editingId === item.id ? (
                             <input
-                              type="number"
+                              type="text"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
                               value={item.actual || ""}
-                              onChange={(e) => updateActual(item.id, Number(e.target.value))}
+                              onChange={(e) => updateActual(item.id, Number(e.target.value.replace(/\D/g, '')) || 0)}
                               onBlur={() => setEditingId(null)}
                               onKeyDown={(e) => e.key === "Enter" && setEditingId(null)}
                               className="w-28 px-3 py-2 text-right rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"

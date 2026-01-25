@@ -512,11 +512,14 @@ export function VisualTablePlanner({ confirmedGuests }: VisualTablePlannerProps)
                   <Label htmlFor="capacity">Antal platser</Label>
                   <Input
                     id="capacity"
-                    type="number"
-                    min={2}
-                    max={20}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={formData.capacity}
-                    onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 8 })}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value.replace(/\D/g, '')) || 2;
+                      setFormData({ ...formData, capacity: Math.min(20, Math.max(2, val)) });
+                    }}
                   />
                 </div>
                 <div className="space-y-2">

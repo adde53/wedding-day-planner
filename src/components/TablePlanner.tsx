@@ -262,11 +262,14 @@ export function TablePlanner({ confirmedGuests }: TablePlannerProps) {
                 <Label htmlFor="capacity">Antal platser</Label>
                 <Input
                   id="capacity"
-                  type="number"
-                  min={1}
-                  max={20}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={formData.capacity}
-                  onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 8 })}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value.replace(/\D/g, '')) || 1;
+                    setFormData({ ...formData, capacity: Math.min(20, Math.max(1, val)) });
+                  }}
                 />
               </div>
               <div className="flex justify-end gap-3 pt-4">
