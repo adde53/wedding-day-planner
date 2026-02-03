@@ -2,42 +2,52 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { FeatureId, INDIVIDUAL_FEATURES, PREMIUM_PACKAGE } from "@/lib/pricing";
 
 const TRIAL_DURATION_DAYS = 7;
+
+// Features included in premium package
+const ALL_PREMIUM_FEATURES: FeatureId[] = [
+  'drink_calculator',
+  'food_calculator', 
+  'table_planner',
+  'excel_export',
+  'wedding_website',
+];
 
 export function usePremium() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isPremium, setIsPremium] = useState(false);
+  const [purchasedFeatures, setPurchasedFeatures] = useState<string[]>([]);
   const [isTrialActive, setIsTrialActive] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   const checkPremiumStatus = useCallback(async () => {
     if (!user) {
       setIsPremium(false);
+      setPurchasedFeatures([]);
       setIsTrialActive(false);
       setTrialDaysLeft(0);
-      setSubscriptionEnd(null);
-      setSubscriptionStatus(null);
       setIsLoading(false);
       return;
     }
 
-    // First check Stripe for paid premium/subscription
+    // First check Stripe for paid premium
     try {
       const { data, error } = await supabase.functions.invoke('check-premium');
       
-      if (!error && data?.isPremium) {
-        setIsPremium(true);
-        setIsTrialActive(false);
-        setSubscriptionEnd(data.subscriptionEnd || null);
-        setSubscriptionStatus(data.subscriptionStatus || null);
-        setIsLoading(false);
-        return;
+      if (!error && data) {
+        if (data.isPremium) {
+          setIsPremium(true);
+          setPurchasedFeatures(data.purchasedFeatures || ALL_PREMIUM_FEATURES);
+          setIsLoading(false);
+          return;
+        }
+        // Store any features they have
+        setPurchasedFeatures(data.purchasedFeatures || []);
       }
     } catch (e) {
       console.log("Could not check Stripe premium status, falling back to database");
@@ -60,10 +70,11 @@ export function usePremium() {
 
         if (daysLeft > 0) {
           setIsPremium(true);
+          setPurchasedFeatures(ALL_PREMIUM_FEATURES);
           setIsTrialActive(true);
           setTrialDaysLeft(daysLeft);
         } else {
-          setIsPremium(false);
+          setIsPremium(purchasedFeatures.length > 0);
           setIsTrialActive(false);
           setTrialDaysLeft(0);
         }
@@ -83,11 +94,16 @@ export function usePremium() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
+    const featureId = urlParams.get('feature');
     
     if (paymentStatus === 'success' && user) {
+      const featureName = featureId === 'premium_package' 
+        ? 'Premium Paket'
+        : INDIVIDUAL_FEATURES.find(f => f.id === featureId)?.name || 'funktionen';
+      
       toast({
         title: "Betalning genomförd! 🎉",
-        description: "Tack för ditt köp! Du har nu tillgång till alla Premium-funktioner.",
+        description: `Tack för ditt köp! Du har nu tillgång till ${featureName}.`,
       });
       // Refresh premium status
       checkPremiumStatus();
@@ -103,11 +119,11 @@ export function usePremium() {
     }
   }, [user, toast, checkPremiumStatus]);
 
-  const initiatePayment = async () => {
+  const initiatePayment = async (featureId: FeatureId = 'premium_package') => {
     if (!user) {
       toast({
         title: "Logga in först",
-        description: "Du måste vara inloggad för att köpa Premium.",
+        description: "Du måste vara inloggad för att köpa.",
         variant: "destructive",
       });
       return;
@@ -116,7 +132,9 @@ export function usePremium() {
     setIsProcessingPayment(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-payment');
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { featureId }
+      });
       
       if (error) throw error;
       
@@ -140,7 +158,7 @@ export function usePremium() {
     if (!user) {
       toast({
         title: "Logga in först",
-        description: "Du måste vara inloggad för att hantera din prenumeration.",
+        description: "Du måste vara inloggad för att hantera dina köp.",
         variant: "destructive",
       });
       return;
@@ -160,15 +178,25 @@ export function usePremium() {
       console.error("Customer portal error:", error);
       toast({
         title: "Något gick fel",
-        description: "Kunde inte öppna prenumerationshanteringen. Försök igen.",
+        description: "Kunde inte öppna köphanteringen. Försök igen.",
         variant: "destructive",
       });
     }
   };
 
   const activatePremium = () => {
-    initiatePayment();
+    initiatePayment('premium_package');
   };
+
+  const purchaseFeature = (featureId: FeatureId) => {
+    initiatePayment(featureId);
+  };
+
+  // Check if user has access to a specific feature
+  const hasFeature = useCallback((featureId: FeatureId): boolean => {
+    if (isTrialActive && trialDaysLeft > 0) return true;
+    return purchasedFeatures.includes(featureId);
+  }, [purchasedFeatures, isTrialActive, trialDaysLeft]);
 
   const startTrial = async () => {
     if (!user) return false;
@@ -213,6 +241,7 @@ export function usePremium() {
       }
 
       setIsPremium(true);
+      setPurchasedFeatures(ALL_PREMIUM_FEATURES);
       setIsTrialActive(true);
       setTrialDaysLeft(TRIAL_DURATION_DAYS);
       
@@ -256,8 +285,11 @@ export function usePremium() {
 
   return { 
     isPremium, 
+    purchasedFeatures,
+    hasFeature,
     isLoading, 
     activatePremium,
+    purchaseFeature,
     initiatePayment,
     isProcessingPayment,
     startTrial, 
@@ -265,8 +297,6 @@ export function usePremium() {
     trialDaysLeft,
     hasUsedTrial,
     refreshPremiumStatus: checkPremiumStatus,
-    subscriptionEnd,
-    subscriptionStatus,
     openCustomerPortal
   };
 }

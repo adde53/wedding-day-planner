@@ -12,6 +12,16 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-PAYMENT] ${step}${detailsStr}`);
 };
 
+// Price IDs for all features
+const PRICE_IDS: Record<string, string> = {
+  premium_package: "price_1SwnvoPI0lb9OQXcjMwzTJmF",
+  drink_calculator: "price_1SwoGVPI0lb9OQXcyT3QLTgY",
+  food_calculator: "price_1SwoHNPI0lb9OQXctKWVUFVD",
+  table_planner: "price_1SwoHcPI0lb9OQXcrhe51w5C",
+  excel_export: "price_1SwoHyPI0lb9OQXcJdMn7KwN",
+  wedding_website: "price_1SwoJZPI0lb9OQXcLrJ8px9D",
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -25,6 +35,17 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    // Parse request body
+    const body = await req.json().catch(() => ({}));
+    const featureId = body.featureId || "premium_package";
+    logStep("Feature requested", { featureId });
+
+    // Validate feature ID
+    const priceId = PRICE_IDS[featureId];
+    if (!priceId) {
+      throw new Error(`Invalid feature ID: ${featureId}`);
+    }
 
     // Retrieve authenticated user
     const authHeader = req.headers.get("Authorization")!;
@@ -45,46 +66,32 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing Stripe customer", { customerId });
-
-      // Check if customer already has an active subscription
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "active",
-        limit: 1,
-      });
-
-      if (subscriptions.data.length > 0) {
-        logStep("Customer already has active subscription");
-        return new Response(JSON.stringify({ error: "Du har redan en aktiv prenumeration" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        });
-      }
     } else {
       logStep("No existing customer, will create new");
     }
 
     const origin = req.headers.get("origin") || "https://mittbrollop.se";
 
-    // Create a subscription checkout session (49 SEK/month)
+    // Create a one-time payment checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SsfYXPI0lb9OQXcQvzia083",
+          price: priceId,
           quantity: 1,
         },
       ],
-      mode: "subscription",
-      success_url: `${origin}/dashboard?payment=success`,
+      mode: "payment",
+      success_url: `${origin}/dashboard?payment=success&feature=${featureId}`,
       cancel_url: `${origin}/dashboard?payment=cancelled`,
       metadata: {
         user_id: user.id,
+        feature_id: featureId,
       },
     });
 
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, featureId });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

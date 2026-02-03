@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePremium } from "@/hooks/usePremium";
+import { FeatureId } from "@/lib/pricing";
 
 interface DashboardHeaderProps {
   activeTab: string;
@@ -12,25 +13,26 @@ interface DashboardHeaderProps {
   guestCount?: { confirmed: number; total: number };
 }
 
-const tabs = [
+const tabs: { id: string; label: string; premium: boolean; featureId?: FeatureId }[] = [
   { id: "overview", label: "Översikt", premium: false },
   { id: "guests", label: "Gästlista", premium: false },
-  { id: "tables", label: "Bord", premium: true },
+  { id: "tables", label: "Bord", premium: true, featureId: "table_planner" },
   { id: "checklist", label: "Checklista", premium: false },
   { id: "budget", label: "Budget", premium: false },
   { id: "timeline", label: "Tidslinje", premium: false },
-  { id: "food", label: "Mat", premium: true },
-  { id: "drinks", label: "Drycker", premium: true },
-  { id: "website", label: "Hemsida", premium: true },
+  { id: "food", label: "Mat", premium: true, featureId: "food_calculator" },
+  { id: "drinks", label: "Drycker", premium: true, featureId: "drink_calculator" },
+  { id: "website", label: "Hemsida", premium: true, featureId: "wedding_website" },
   { id: "settings", label: "Inställningar", premium: false },
 ];
 
 interface DashboardHeaderPropsExtended extends DashboardHeaderProps {
-  onPremiumClick?: (featureName: string) => void;
+  onPremiumClick?: (featureName: string, featureId?: FeatureId) => void;
   isPremium?: boolean;
+  hasFeature?: (featureId: FeatureId) => boolean;
 }
 
-export function DashboardHeader({ activeTab, onTabChange, guestCount, onPremiumClick, isPremium }: DashboardHeaderPropsExtended) {
+export function DashboardHeader({ activeTab, onTabChange, guestCount, onPremiumClick, isPremium, hasFeature }: DashboardHeaderPropsExtended) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -40,12 +42,17 @@ export function DashboardHeader({ activeTab, onTabChange, guestCount, onPremiumC
     navigate("/");
   };
 
+  // Check if user has access to this specific feature
+  const canAccessFeature = (tab: typeof tabs[0]): boolean => {
+    if (!tab.premium) return true;
+    if (isPremium) return true;
+    if (tab.featureId && hasFeature?.(tab.featureId)) return true;
+    return false;
+  };
+
   const handleTabClick = (tab: typeof tabs[0]) => {
-    if (tab.premium && !isPremium) {
-      onPremiumClick?.(tab.label);
-    } else {
-      onTabChange(tab.id);
-    }
+    // Always allow navigation - demo mode will show locked state
+    onTabChange(tab.id);
   };
 
   return (
@@ -82,7 +89,7 @@ export function DashboardHeader({ activeTab, onTabChange, guestCount, onPremiumC
                 )}
               >
                 {tab.label}
-                {tab.premium && !isPremium && (
+                {tab.premium && !canAccessFeature(tab) && (
                   <Crown className="w-3.5 h-3.5 text-gold" />
                 )}
               </button>
@@ -143,7 +150,7 @@ export function DashboardHeader({ activeTab, onTabChange, guestCount, onPremiumC
                   )}
                 >
                   {tab.label}
-                  {tab.premium && !isPremium && (
+                  {tab.premium && !canAccessFeature(tab) && (
                     <Crown className="w-3 h-3 text-gold" />
                   )}
                 </button>
