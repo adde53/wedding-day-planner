@@ -14,16 +14,18 @@ import { DrinkCalculator } from "@/components/DrinkCalculator";
 import { FoodCalculator } from "@/components/FoodCalculator";
 import { VisualTablePlanner } from "@/components/VisualTablePlanner";
 import { PremiumGate } from "@/components/PremiumGate";
+import { PremiumFeatureWrapper } from "@/components/PremiumFeatureWrapper";
 import { TrialBanner } from "@/components/TrialBanner";
 import { Timeline } from "@/components/Timeline";
 import { WeddingWebsiteBuilder } from "@/components/WeddingWebsiteBuilder";
 import { SupportDialog } from "@/components/SupportDialog";
 import { Heart, Sparkles, Calendar, Wallet, CheckSquare, Settings, Users, Wine, UtensilsCrossed, Table2, Crown, Globe, MessageCircle } from "lucide-react";
+import { FeatureId } from "@/lib/pricing";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const { profile, updateWeddingDate } = useProfile();
-  const { isPremium, activatePremium, startTrial, isTrialActive, trialDaysLeft, hasUsedTrial, isProcessingPayment } = usePremium();
+  const { isPremium, hasFeature, activatePremium, purchaseFeature, startTrial, isTrialActive, trialDaysLeft, hasUsedTrial, isProcessingPayment } = usePremium();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("overview");
@@ -31,6 +33,7 @@ export default function Dashboard() {
   const [guestStats, setGuestStats] = useState({ confirmed: 0, declined: 0, pending: 0, total: 0 });
   const [premiumGateOpen, setPremiumGateOpen] = useState(false);
   const [premiumFeatureName, setPremiumFeatureName] = useState("");
+  const [premiumFeatureId, setPremiumFeatureId] = useState<FeatureId | undefined>(undefined);
   const totalTasks = 16;
 
   // Read tab from URL params on mount
@@ -99,8 +102,10 @@ export default function Dashboard() {
         onTabChange={setActiveTab} 
         guestCount={{ confirmed: guestStats.confirmed, total: guestStats.total }}
         isPremium={isPremium}
-        onPremiumClick={(featureName) => {
+        hasFeature={hasFeature}
+        onPremiumClick={(featureName, featureId) => {
           setPremiumFeatureName(featureName);
+          setPremiumFeatureId(featureId);
           setPremiumGateOpen(true);
         }}
       />
@@ -301,7 +306,14 @@ export default function Dashboard() {
                   Skapa bord och placera era gäster
                 </p>
               </div>
-              <VisualTablePlanner confirmedGuests={guestStats.confirmed} />
+              <PremiumFeatureWrapper
+                featureId="table_planner"
+                hasAccess={hasFeature('table_planner')}
+                onUnlock={purchaseFeature}
+                onBuyPackage={activatePremium}
+              >
+                <VisualTablePlanner confirmedGuests={guestStats.confirmed} />
+              </PremiumFeatureWrapper>
             </motion.div>
           )}
 
@@ -361,7 +373,14 @@ export default function Dashboard() {
                   Beräkna matmängder och få prisestimat för catering
                 </p>
               </div>
-              <FoodCalculator confirmedGuests={guestStats.confirmed} />
+              <PremiumFeatureWrapper
+                featureId="food_calculator"
+                hasAccess={hasFeature('food_calculator')}
+                onUnlock={purchaseFeature}
+                onBuyPackage={activatePremium}
+              >
+                <FoodCalculator confirmedGuests={guestStats.confirmed} />
+              </PremiumFeatureWrapper>
             </motion.div>
           )}
 
@@ -381,7 +400,14 @@ export default function Dashboard() {
                   Beräkna hur mycket dryck ni behöver baserat på antal gäster
                 </p>
               </div>
-              <DrinkCalculator confirmedGuests={guestStats.confirmed} weddingDate={weddingDate} />
+              <PremiumFeatureWrapper
+                featureId="drink_calculator"
+                hasAccess={hasFeature('drink_calculator')}
+                onUnlock={purchaseFeature}
+                onBuyPackage={activatePremium}
+              >
+                <DrinkCalculator confirmedGuests={guestStats.confirmed} weddingDate={weddingDate} />
+              </PremiumFeatureWrapper>
             </motion.div>
           )}
 
@@ -401,7 +427,14 @@ export default function Dashboard() {
                   Bygg en vacker hemsida för era gäster
                 </p>
               </div>
-              <WeddingWebsiteBuilder />
+              <PremiumFeatureWrapper
+                featureId="wedding_website"
+                hasAccess={hasFeature('wedding_website')}
+                onUnlock={purchaseFeature}
+                onBuyPackage={activatePremium}
+              >
+                <WeddingWebsiteBuilder />
+              </PremiumFeatureWrapper>
             </motion.div>
           )}
 
@@ -464,10 +497,14 @@ export default function Dashboard() {
         isOpen={premiumGateOpen}
         onClose={() => setPremiumGateOpen(false)}
         featureName={premiumFeatureName}
+        featureId={premiumFeatureId}
         hasUsedTrial={hasUsedTrial}
         isProcessingPayment={isProcessingPayment}
         onUpgrade={() => {
           activatePremium();
+        }}
+        onPurchaseFeature={(featureId) => {
+          purchaseFeature(featureId);
         }}
         onStartTrial={() => {
           startTrial();
@@ -477,4 +514,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

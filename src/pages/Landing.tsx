@@ -15,7 +15,7 @@ import {
   Globe,
   MessageCircle,
   Lightbulb,
-  LogOut, // added
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,7 @@ import { usePremium } from "@/hooks/usePremium";
 import { TrialBanner } from "@/components/TrialBanner";
 import { PremiumGate } from "@/components/PremiumGate";
 import { useState } from "react";
+import { FeatureId } from "@/lib/pricing";
 
 const freeFeatures = [
   {
@@ -78,17 +79,16 @@ const premiumFeatures = [
 const stats = [
   { value: "16+", label: "Checklistuppgifter" },
   { value: "Gratis", label: "Grundversion" },
-  { value: "49 kr/mån", label: "Premium" }, // updated
+  { value: "199 kr", label: "Alla Premium" },
 ];
 
 export default function Landing() {
   const auth = useAuth();
   const { user } = auth;
   const navigate = useNavigate();
-  const { isTrialActive, trialDaysLeft, activatePremium, startTrial, hasUsedTrial, isProcessingPayment } = usePremium();
+  const { isTrialActive, trialDaysLeft, activatePremium, purchaseFeature, startTrial, hasUsedTrial, isProcessingPayment } = usePremium();
   const showBanner = !!user && isTrialActive && trialDaysLeft > 0;
 
-  // New: control PremiumGate modal
   const [premiumGateOpen, setPremiumGateOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -99,168 +99,139 @@ export default function Landing() {
       } else {
         console.warn("No logout function available on useAuth()");
       }
-      navigate("/");
     } catch (e) {
       console.error("Logout failed", e);
     }
   };
 
   return (
-    <div className="min-h-screen bg-hero-gradient">
-      {/* Trial Banner (flow, same spacing pattern as Dashboard) */}
+    <div className="min-h-screen bg-background">
       {showBanner && (
         <TrialBanner
           daysLeft={trialDaysLeft}
-          onUpgradeClick={() => {
-            setPremiumGateOpen(true);
-          }}
+          onUpgradeClick={() => setPremiumGateOpen(true)}
         />
       )}
 
-      {/* Navigation (sticky like Dashboard) */}
-      <nav className="sticky top-0 z-40 bg-background/70 backdrop-blur-lg border-b border-border/50">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="max-w-6xl mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between h-14 sm:h-16">
-            <Link to="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-2 sm:gap-3"
+            >
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md shadow-primary/20">
                 <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
               </div>
-              <span className="font-serif text-base sm:text-xl font-medium text-foreground">
-                MittBröllop
-              </span>
-            </Link>
-            <div className="flex items-center gap-1.5 sm:gap-4">
-              <Link to="/brollopsinfo" className="hidden lg:block">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50"
-                >
-                  Bröllopskostnader
-                </Button>
-              </Link>
-              <Link to="/guider" className="hidden md:block">
-                <Button variant="outline" size="sm" className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 gap-2">
-                  <Lightbulb className="w-4 h-4" />
-                  Guider
+              <h1 className="font-serif text-base sm:text-xl font-medium text-foreground">
+                <span className="hidden xs:inline">MittBröllop</span>
+                <span className="xs:hidden">MittBröllop</span>
+              </h1>
+            </motion.div>
+            <nav className="flex items-center gap-1 sm:gap-2">
+              <Link to="/guider">
+                <Button variant="ghost" size="sm" className="gap-1 text-xs sm:text-sm px-2 sm:px-3">
+                  <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Guider</span>
                 </Button>
               </Link>
               {user ? (
                 <>
                   <Link to="/dashboard">
-                    <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 text-xs sm:text-sm px-2.5 sm:px-4">
-                      <span className="hidden sm:inline">Min planering</span>
-                      <span className="sm:hidden">Planering</span>
-                      <ArrowRight className="ml-1 sm:ml-2 w-3 h-3 sm:w-4 sm:h-4" />
+                    <Button size="sm" className="bg-primary text-xs sm:text-sm px-2.5 sm:px-4">
+                      <span className="hidden xs:inline">Dashboard</span>
+                      <span className="xs:hidden">Planera</span>
                     </Button>
                   </Link>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-foreground hover:text-primary p-1.5 sm:p-2"
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="px-2"
                     onClick={handleLogout}
-                    aria-label="Logga ut"
-                    title="Logga ut"
                   >
                     <LogOut className="w-4 h-4" />
                   </Button>
                 </>
               ) : (
                 <>
-                  <Link to="/auth" className="hidden sm:block">
-                    <Button variant="ghost" size="sm" className="text-foreground hover:text-primary">
+                  <Link to="/auth" className="hidden xs:block">
+                    <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                       Logga in
                     </Button>
                   </Link>
                   <Link to="/auth">
-                    <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 text-xs sm:text-sm px-2.5 sm:px-4">
+                    <Button size="sm" className="bg-primary text-xs sm:text-sm px-2.5 sm:px-4">
                       <span className="hidden xs:inline">Kom igång</span>
                       <span className="xs:hidden">Skapa konto</span>
                     </Button>
                   </Link>
                 </>
               )}
-            </div>
+            </nav>
           </div>
         </div>
-      </nav>
+      </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-40 left-10 w-64 h-64 bg-rose-light/40 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-60 right-10 w-72 h-72 bg-gold-light/50 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-20 left-1/3 w-48 h-48 bg-sage-light/60 rounded-full blur-3xl pointer-events-none" />
+      <section className="pt-28 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-sage-light/30 via-transparent to-transparent" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-10 w-96 h-96 bg-gold-light/30 rounded-full blur-3xl" />
 
-        <div className="max-w-6xl mx-auto relative">
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-rose-light to-gold-light border border-rose/20 mb-6 shadow-sm">
-                <Sparkles className="w-4 h-4 text-rose" />
-                <span className="text-sm font-medium text-rose">
-                  Sveriges smartaste bröllopsplanerare
-                </span>
-              </div>
-            </motion.div>
+        <div className="max-w-5xl mx-auto text-center relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center gap-2 bg-card px-4 py-2 rounded-full border border-border shadow-sm mb-8">
+              <Sparkles className="w-4 h-4 text-gold" />
+              <span className="text-sm font-medium text-muted-foreground">
+                Sveriges smidigaste bröllopsplanerare
+              </span>
+            </div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-serif text-5xl sm:text-6xl lg:text-7xl font-medium text-foreground leading-tight mb-6"
-            >
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-foreground mb-6 leading-tight">
               Planera ert
-              <span className="block text-gradient-sage">drömbröllop</span>
-            </motion.h1>
+              <span className="block text-primary"> drömBröllop</span>
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"
-            >
-              Checklista, gästhantering, budget, mat- och dryckeskalkylatorer samt bordsplacering — allt på ett ställe. Börja gratis idag.
-            </motion.p>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+              Allt ni behöver för att skapa ett perfekt bröllop. Checklista, gästlista, budget 
+              och smarta kalkylatorer — helt gratis att börja.
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-3 px-4"
-            >
-              <Link to="/auth" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-8 bg-primary hover:bg-primary/90 text-base sm:text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all">
-                  Skapa gratis konto
-                  <ArrowRight className="ml-2 w-4 sm:w-5 h-4 sm:h-5" />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link to="/auth">
+                <Button size="lg" className="gap-2 shadow-lg shadow-primary/20 text-base px-8">
+                  Börja planera gratis
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
-              <a href="#pricing" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg border-border bg-card/50 backdrop-blur-sm hover:bg-card">
-                  Se priser
+              <Link to="/guider">
+                <Button variant="outline" size="lg" className="gap-2 text-base">
+                  <Lightbulb className="w-4 h-4" />
+                  Läs våra guider
                 </Button>
-              </a>
-            </motion.div>
-          </div>
+              </Link>
+            </div>
+          </motion.div>
 
           {/* Stats */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-12 sm:mt-20 grid grid-cols-3 gap-3 sm:gap-8 max-w-2xl mx-auto px-2"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mt-16 grid grid-cols-3 gap-4 sm:gap-8 max-w-lg mx-auto"
           >
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-2xl sm:text-4xl font-serif font-medium text-foreground">
+                <p className="text-2xl sm:text-4xl font-serif font-bold text-foreground">
                   {stat.value}
                 </p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  {stat.label}
-                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{stat.label}</p>
               </div>
             ))}
           </motion.div>
@@ -268,7 +239,7 @@ export default function Landing() {
       </section>
 
       {/* Free Features Section */}
-      <section className="py-20 px-4 sm:px-6 bg-gradient-to-b from-transparent via-muted/40 to-muted/30">
+      <section className="py-20 px-4 sm:px-6 bg-card/50">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -277,19 +248,19 @@ export default function Landing() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-sage-light to-primary/10 border border-primary/20 mb-4 shadow-sm">
+            <div className="inline-flex items-center gap-2 bg-sage-light px-4 py-2 rounded-full mb-6">
               <Check className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">Helt gratis</span>
             </div>
             <h2 className="font-serif text-4xl font-medium text-foreground mb-4">
-              Allt ni behöver för att komma igång
+              Allt du behöver för att komma igång
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Våra gratisverktyg räcker långt. Använd checklistan, gästlistan och budgetverktyget utan kostnad.
+              Börja planera ert bröllop utan kostnad. Uppgradera till Premium när ni vill ha mer.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {freeFeatures.map((feature, i) => (
               <motion.article
                 key={feature.title}
@@ -304,14 +275,9 @@ export default function Landing() {
                 >
                   <feature.icon className="w-7 h-7 text-primary" />
                 </div>
-                <div className="flex items-center gap-2 mb-3">
-                  <h3 className="font-serif text-2xl font-medium text-foreground">
-                    {feature.title}
-                  </h3>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    Gratis
-                  </span>
-                </div>
+                <h3 className="font-serif text-2xl font-medium text-foreground mb-3">
+                  {feature.title}
+                </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
@@ -322,7 +288,7 @@ export default function Landing() {
       </section>
 
       {/* Premium Features Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 bg-gradient-to-b from-muted/30 to-transparent">
+      <section className="py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -331,7 +297,7 @@ export default function Landing() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-gold-light to-terracotta-light border border-gold/30 mb-4 shadow-sm">
+            <div className="inline-flex items-center gap-2 bg-gold-light px-4 py-2 rounded-full mb-6">
               <Crown className="w-4 h-4 text-accent" />
               <span className="text-sm font-medium text-accent">Premium</span>
             </div>
@@ -339,7 +305,7 @@ export default function Landing() {
               Avancerade verktyg för perfekt planering
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Få tillgång till våra smarta kalkylatorer och bordsplacering för 49 kr/mån — avsluta när som helst.
+                Få tillgång till alla avancerade verktyg för en engångskostnad på 199 kr — eller köp enskilda funktioner för 79 kr styck.
             </p>
           </motion.div>
 
@@ -381,9 +347,11 @@ export default function Landing() {
           >
             <div className="absolute inset-0 bg-gradient-to-br from-gold-light/30 via-transparent to-rose-light/20 pointer-events-none" />
             <div className="relative text-center mb-6">
-              <p className="text-sm text-muted-foreground mb-2">Premium - Månadsabonnemang</p>
-              <p className="text-5xl font-serif font-bold text-foreground">49 kr/mån</p>
-              <p className="text-sm text-muted-foreground mt-2">Avsluta när som helst</p>
+              <p className="text-sm text-muted-foreground mb-2">Premium Paket - Engångsköp</p>
+              <p className="text-5xl font-serif font-bold text-foreground">199 kr</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                <span className="line-through">395 kr</span> om köpt separat — spara 196 kr!
+              </p>
             </div>
             <ul className="relative space-y-3 mb-8">
               {[
@@ -392,7 +360,6 @@ export default function Landing() {
                 "Matkalkylator med cateringpriser",
                 "Bordsplacering för alla gäster",
                 "Exportera gästlista till Excel",
-                "Alla framtida uppdateringar",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-sm">
                   <Check className="w-4 h-4 text-primary flex-shrink-0" />
@@ -406,8 +373,9 @@ export default function Landing() {
               onClick={() => setPremiumGateOpen(true)}
             >
               <Crown className="w-4 h-4" />
-              Uppgradera nu
+              Köp Premium – 199 kr
             </Button>
+            <p className="text-xs text-muted-foreground mt-3 text-center">Eller 79 kr per funktion</p>
           </motion.div>
         </div>
       </section>
@@ -422,7 +390,6 @@ export default function Landing() {
             transition={{ duration: 0.5 }}
             className="bg-gradient-to-br from-primary via-primary to-primary/90 rounded-3xl p-12 text-center shadow-2xl shadow-primary/30 relative overflow-hidden"
           >
-            {/* Decorative circles */}
             <div className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
             <div className="absolute bottom-0 right-0 w-60 h-60 bg-white/5 rounded-full blur-3xl" />
 
@@ -431,16 +398,22 @@ export default function Landing() {
             >
               <Heart className="w-8 h-8 text-primary-foreground" />
             </div>
+
             <h2 className="relative font-serif text-3xl sm:text-4xl font-medium text-primary-foreground mb-4">
-              Redo att börja planera?
+              Börja planera ert drömBröllop
             </h2>
-            <p className="relative text-lg text-primary-foreground/80 mb-8 max-w-lg mx-auto">
-              Skapa ett gratis konto och ta första steget mot ert drömbröllop. Uppgradera till Premium när ni är redo.
+            <p className="relative text-primary-foreground/80 text-lg mb-8 max-w-xl mx-auto">
+              Skapa ett konto gratis och börja planera redan idag. 
+              Alla grundverktyg är helt gratis.
             </p>
             <Link to="/auth">
-              <Button size="lg" className="relative h-14 px-10 bg-card text-foreground hover:bg-card/90 text-lg shadow-lg hover:shadow-xl transition-all">
-                Skapa gratis konto
-                <ArrowRight className="ml-2 w-5 h-5" />
+              <Button
+                size="lg"
+                variant="secondary"
+                className="relative gap-2 shadow-lg text-base px-8"
+              >
+                Kom igång gratis
+                <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </motion.div>
@@ -448,29 +421,33 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8 sm:py-12 px-4 sm:px-6">
+      <footer className="bg-card/50 border-t border-border py-10 sm:py-12 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-center md:justify-start gap-3">
-              <div
-                className="w-10 h-10 rounded-lg bg-sage-gradient flex items-center justify-center"
-              >
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-serif text-lg font-medium text-foreground">
+              <span className="font-serif text-xl font-medium text-foreground">
                 MittBröllop.se
               </span>
             </div>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-6">
-              <Link to="/brollopsinfo" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Bröllopskostnader
-              </Link>
-              <Link to="/guider" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+              <Link
+                to="/guider"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Guider & Tips
               </Link>
+              <Link
+                to="/brollopsinfo"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Bröllopsinfo
+              </Link>
               <SupportDialog>
-                <button className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-                  <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                <button className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                  <MessageCircle className="w-4 h-4" />
                   Support
                 </button>
               </SupportDialog>
@@ -487,10 +464,14 @@ export default function Landing() {
         isOpen={premiumGateOpen}
         onClose={() => setPremiumGateOpen(false)}
         featureName="Premium"
+        featureId="premium_package"
         hasUsedTrial={hasUsedTrial}
         isProcessingPayment={isProcessingPayment}
         onUpgrade={() => {
           activatePremium();
+        }}
+        onPurchaseFeature={(featureId) => {
+          purchaseFeature(featureId);
         }}
         onStartTrial={() => {
           startTrial();
@@ -500,4 +481,3 @@ export default function Landing() {
     </div>
   );
 }
-

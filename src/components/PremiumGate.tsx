@@ -1,4 +1,4 @@
-import { Crown, Check, ArrowRight, Sparkles, Loader2 } from "lucide-react";
+import { Crown, Check, ArrowRight, Sparkles, Loader2, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -6,34 +6,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PREMIUM_PACKAGE, INDIVIDUAL_FEATURES, PACKAGE_SAVINGS, FeatureId, getFeatureById } from "@/lib/pricing";
 
 interface PremiumGateProps {
   isOpen: boolean;
   onClose: () => void;
   featureName: string;
+  featureId?: FeatureId;
   onUpgrade?: () => void;
+  onPurchaseFeature?: (featureId: FeatureId) => void;
   onStartTrial?: () => void;
   hasUsedTrial?: boolean;
   isProcessingPayment?: boolean;
 }
 
-const premiumFeatures = [
-  "Dryckeskalkylator med prisestimat",
-  "Matkalkylator med cateringpriser",
-  "Bordsplacering för alla gäster",
-  "Exportera gästlista till Excel",
-  "Obegränsad tillgång till alla verktyg",
-];
-
 export function PremiumGate({ 
   isOpen, 
   onClose, 
   featureName, 
+  featureId,
   onUpgrade,
+  onPurchaseFeature,
   onStartTrial,
   hasUsedTrial = false,
   isProcessingPayment = false
 }: PremiumGateProps) {
+  const currentFeature = featureId ? getFeatureById(featureId) : null;
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
@@ -42,25 +41,15 @@ export function PremiumGate({
             <div className="w-16 h-16 rounded-2xl bg-gold-light flex items-center justify-center">
               <Crown className="w-8 h-8 text-accent" />
             </div>
-            Uppgradera till Premium
+            Lås upp {featureName}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           <p className="text-center text-muted-foreground">
             <span className="font-medium text-foreground">{featureName}</span> är en premiumfunktion. 
-            Uppgradera för att få tillgång till alla avancerade verktyg.
+            Välj hur du vill låsa upp den.
           </p>
-
-          <div className="bg-muted/30 rounded-xl p-4 space-y-3">
-            <p className="text-sm font-medium text-foreground mb-3">Med Premium får du:</p>
-            {premiumFeatures.map((feature) => (
-              <div key={feature} className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span className="text-foreground">{feature}</span>
-              </div>
-            ))}
-          </div>
 
           {/* Free Trial Section */}
           {!hasUsedTrial && (
@@ -69,30 +58,88 @@ export function PremiumGate({
                 <Sparkles className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium text-primary">Prova gratis i 7 dagar!</p>
               </div>
-              <p className="text-xs text-muted-foreground">Inget kort krävs</p>
-            </div>
-          )}
-
-          {/* Pricing: Monthly subscription */}
-          <div className="bg-gold-light rounded-xl p-4 text-center">
-            <p className="text-sm text-muted-foreground mb-1">Månadsprenumeration</p>
-            <p className="text-3xl font-serif font-bold text-foreground">49 kr/mån</p>
-            <p className="text-xs text-muted-foreground">Avsluta när som helst</p>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {!hasUsedTrial && (
+              <p className="text-xs text-muted-foreground mb-3">Alla funktioner, inget kort krävs</p>
               <Button 
-                size="lg" 
                 variant="outline"
                 className="w-full gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 onClick={onStartTrial}
                 disabled={isProcessingPayment}
               >
                 <Sparkles className="w-4 h-4" />
-                Starta 7 dagars gratis provperiod
+                Starta gratis provperiod
               </Button>
-            )}
+            </div>
+          )}
+
+          {/* Buy individual feature */}
+          {currentFeature && currentFeature.id !== 'premium_package' && (
+            <div className="bg-muted/30 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="font-medium text-foreground">Köp endast {currentFeature.name}</p>
+                  <p className="text-xs text-muted-foreground">{currentFeature.description}</p>
+                </div>
+                <p className="text-xl font-serif font-bold text-foreground">{currentFeature.price} kr</p>
+              </div>
+              <Button 
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => onPurchaseFeature?.(currentFeature.id)}
+                disabled={isProcessingPayment}
+              >
+                {isProcessingPayment ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Laddar...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-4 h-4" />
+                    Köp för {currentFeature.price} kr
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Divider */}
+          {currentFeature && currentFeature.id !== 'premium_package' && (
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">eller spara {PACKAGE_SAVINGS} kr</span>
+              </div>
+            </div>
+          )}
+
+          {/* Premium Package - Best value */}
+          <div className="bg-gold-light rounded-xl p-4 border-2 border-gold">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Crown className="w-4 h-4 text-accent" />
+                  <p className="font-medium text-foreground">Premium Paket</p>
+                  <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">Bäst värde</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Alla 5 funktioner för alltid</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-serif font-bold text-foreground">{PREMIUM_PACKAGE.price} kr</p>
+                <p className="text-xs text-muted-foreground line-through">{INDIVIDUAL_FEATURES.reduce((sum, f) => sum + f.price, 0)} kr</p>
+              </div>
+            </div>
+
+            <div className="space-y-2 mb-4">
+              {INDIVIDUAL_FEATURES.map((feature) => (
+                <div key={feature.id} className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span className="text-foreground">{feature.name}</span>
+                </div>
+              ))}
+            </div>
+
             <Button 
               size="lg" 
               className="w-full gap-2"
@@ -107,23 +154,25 @@ export function PremiumGate({
               ) : (
                 <>
                   <Crown className="w-4 h-4" />
-                  Starta prenumeration – 49 kr/mån
+                  Köp Premium – {PREMIUM_PACKAGE.price} kr
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </Button>
-            <p className="text-xs text-center text-muted-foreground">
-              Återkommande betalning via Stripe. Swish & kort accepteras. Avsluta när som helst.
-            </p>
-            <Button 
-              variant="ghost" 
-              onClick={onClose}
-              className="text-muted-foreground"
-              disabled={isProcessingPayment}
-            >
-              Kanske senare
-            </Button>
           </div>
+
+          <p className="text-xs text-center text-muted-foreground">
+            Engångsbetalning via Stripe. Swish & kort accepteras.
+          </p>
+          
+          <Button 
+            variant="ghost" 
+            onClick={onClose}
+            className="w-full text-muted-foreground"
+            disabled={isProcessingPayment}
+          >
+            Kanske senare
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
