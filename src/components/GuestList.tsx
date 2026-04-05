@@ -260,6 +260,68 @@ export function GuestList({ onGuestStatsChange }: GuestListProps) {
     toast.success("Kod kopierad!");
   };
 
+  const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    const text = await file.text();
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    const names: { name: string; plus_one: boolean; plus_one_name: string | null }[] = [];
+    
+    for (const line of lines) {
+      // Split by comma and find the last non-empty cell (the name column)
+      const cells = line.split(',');
+      const rawName = cells.map(c => c.trim()).filter(Boolean).pop();
+      if (!rawName) continue;
+      
+      // Skip if name is in parentheses (like "(Andreas)" - couple names)
+      const isParenthesized = rawName.startsWith('(') && rawName.endsWith(')');
+      const cleanName = isParenthesized ? rawName.slice(1, -1) : rawName;
+      
+      if (!cleanName) continue;
+
+      // Check for plus one pattern: "Name (+PlusOneName)" or "Name +1"
+      const plusOneMatch = cleanName.match(/^(.+?)\s*\(\+\s*(.+?)\)$/);
+      const plusOneSimple = cleanName.match(/^(.+?)\s*\+1$/);
+      
+      if (plusOneMatch) {
+        names.push({ name: plusOneMatch[1].trim(), plus_one: true, plus_one_name: plusOneMatch[2].trim() });
+      } else if (plusOneSimple) {
+        names.push({ name: plusOneSimple[1].trim(), plus_one: true, plus_one_name: null });
+      } else {
+        names.push({ name: cleanName.trim(), plus_one: false, plus_one_name: null });
+      }
+    }
+
+    if (names.length === 0) {
+      toast.error("Inga gäster hittades i filen");
+      return;
+    }
+
+    // Insert all guests
+    const guestsToInsert = names.map(g => ({
+      user_id: user.id,
+      name: g.name,
+      plus_one: g.plus_one,
+      plus_one_name: g.plus_one_name,
+      rsvp_status: 'pending',
+    }));
+
+    const { error } = await supabase.from("guests").insert(guestsToInsert);
+    
+    if (error) {
+      toast.error("Kunde inte importera gäster");
+      console.error(error);
+    } else {
+      toast.success(`${names.length} gäster importerade!`);
+      fetchGuests();
+    }
+    
+    // Reset file input
+    e.target.value = '';
+  };
+
   // Statistics
   const confirmedCount = guests.filter(g => g.rsvp_status === "confirmed").length;
   const declinedCount = guests.filter(g => g.rsvp_status === "declined").length;
