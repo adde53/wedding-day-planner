@@ -1,0 +1,1 @@
+UPDATE public.user_purchases SET feature_id = 'premium_package' WHERE user_id = '932f3655-2762-46a8-b5c1-142a2937d78c' AND feature_id = 'tes';
