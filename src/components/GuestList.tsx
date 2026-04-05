@@ -423,51 +423,54 @@ export function GuestList({ onGuestStatsChange }: GuestListProps) {
       </div>
 
       {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Sök gäster..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Sök gäster..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Filtrera" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alla</SelectItem>
+              <SelectItem value="confirmed">Bekräftat</SelectItem>
+              <SelectItem value="pending">Väntar</SelectItem>
+              <SelectItem value="declined">Avböjt</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="Filtrera" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alla</SelectItem>
-            <SelectItem value="confirmed">Bekräftat</SelectItem>
-            <SelectItem value="pending">Väntar</SelectItem>
-            <SelectItem value="declined">Avböjt</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button
-          variant="outline"
-          className="gap-2"
-          onClick={() => exportGuestsToExcel(guests)}
-          disabled={guests.length === 0}
-        >
-          <Download className="w-4 h-4" />
-          Exportera
-        </Button>
-        <Button
-          variant="outline"
-          className="gap-2"
-          onClick={() => document.getElementById('csv-import')?.click()}
-        >
-          <Upload className="w-4 h-4" />
-          Importera CSV
-        </Button>
-        <input
-          id="csv-import"
-          type="file"
-          accept=".csv"
-          className="hidden"
-          onChange={handleCsvImport}
-        />
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => exportGuestsToExcel(guests)}
+            disabled={guests.length === 0}
+          >
+            <Download className="w-4 h-4" />
+            Exportera
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => document.getElementById('csv-import')?.click()}
+          >
+            <Upload className="w-4 h-4" />
+            Importera CSV
+          </Button>
+          <input
+            id="csv-import"
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleCsvImport}
+          />
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
           if (!open) resetForm();
@@ -563,6 +566,7 @@ export function GuestList({ onGuestStatsChange }: GuestListProps) {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Guest List */}
