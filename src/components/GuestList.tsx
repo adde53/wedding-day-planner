@@ -566,6 +566,7 @@ export function GuestList({ onGuestStatsChange }: GuestListProps) {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Guest List */}
