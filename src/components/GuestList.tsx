@@ -453,6 +453,21 @@ export function GuestList({ onGuestStatsChange }: GuestListProps) {
           <Download className="w-4 h-4" />
           Exportera
         </Button>
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => document.getElementById('csv-import')?.click()}
+        >
+          <Upload className="w-4 h-4" />
+          Importera CSV
+        </Button>
+        <input
+          id="csv-import"
+          type="file"
+          accept=".csv"
+          className="hidden"
+          onChange={handleCsvImport}
+        />
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
           if (!open) resetForm();
